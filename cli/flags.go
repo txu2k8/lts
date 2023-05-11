@@ -120,89 +120,94 @@ func commandLine(ctx *cli.Context) string {
 }
 
 // Flags common across all I/O commands such as cp, mirror, stat, pipe etc.
-var ioFlags = []cli.Flag{
+var aliasFlags = []cli.Flag{
 	cli.StringFlag{
-		Name:   "host",
-		Usage:  "host. Multiple hosts can be specified as a comma separated list.",
-		EnvVar: appNameUC + "_HOST",
-		Value:  "127.0.0.1:9000",
+		Name:   "endpoint",
+		Usage:  "aliasFlag: endpoint. Multiple endpoints can be specified as a comma separated list.",
+		EnvVar: appNameUC + "_ENDPOINT",
+		Value:  "127.0.0.1:6600",
 	},
 	cli.StringFlag{
 		Name:   "access-key",
-		Usage:  "Specify access key",
+		Usage:  "aliasFlag: Specify access key",
 		EnvVar: appNameUC + "_ACCESS_KEY",
 		Value:  "",
 	},
 	cli.StringFlag{
 		Name:   "secret-key",
-		Usage:  "Specify secret key",
+		Usage:  "aliasFlag: Specify secret key",
 		EnvVar: appNameUC + "_SECRET_KEY",
 		Value:  "",
 	},
 	cli.BoolFlag{
 		Name:   "tls",
-		Usage:  "Use TLS (HTTPS) for transport",
+		Usage:  "aliasFlag: Use TLS (HTTPS) for transport",
 		EnvVar: appNameUC + "_TLS",
 	},
 	cli.StringFlag{
 		Name:   "region",
-		Usage:  "Specify a custom region",
+		Usage:  "aliasFlag: Specify a custom region",
 		EnvVar: appNameUC + "_REGION",
+		Hidden: true,
 	},
 	cli.StringFlag{
 		Name:   "signature",
-		Usage:  "Specify a signature method. Available values are S3V2, S3V4",
+		Usage:  "aliasFlag: Specify a signature method. Available values are S3V2, S3V4",
 		Value:  "S3V4",
 		Hidden: true,
-	},
-	cli.BoolFlag{
-		Name:  "encrypt",
-		Usage: "encrypt/decrypt objects (using server-side encryption with random keys)",
-	},
-	cli.StringFlag{
-		Name:  "bucket",
-		Value: appName + "-benchmark-bucket",
-		Usage: "Bucket to use for benchmark data. ALL DATA WILL BE DELETED IN BUCKET!",
 	},
 	cli.StringFlag{
 		Name:  "host-select",
 		Value: string(hostSelectTypeWeighed),
-		Usage: fmt.Sprintf("Host selection algorithm. Can be %q or %q", hostSelectTypeWeighed, hostSelectTypeRoundrobin),
+		Usage: fmt.Sprintf("aliasFlag: Host selection algorithm. Can be %q or %q", hostSelectTypeWeighed, hostSelectTypeRoundrobin),
 	},
 	cli.BoolFlag{
 		Name:   "resolve-host",
-		Usage:  "Resolve the host(s) ip(s) (including multiple A/AAAA records). This can break SSL certificates, use --insecure if so",
+		Usage:  "aliasFlag: Resolve the host(s) ip(s) (including multiple A/AAAA records). This can break SSL certificates, use --insecure if so",
 		Hidden: true,
+	},
+}
+
+// Flags common across all I/O commands such as cp, mirror, stat, pipe etc.
+var ioFlags = []cli.Flag{
+	cli.BoolFlag{
+		Name:  "encrypt",
+		Usage: "ioFlags: encrypt/decrypt objects (using server-side encryption with random keys)",
+	},
+	cli.StringFlag{
+		Name:  "bucket",
+		Value: appName + "-benchmark-bucket",
+		Usage: "ioFlags: Bucket to use for benchmark data. ALL DATA WILL BE DELETED IN BUCKET!",
 	},
 	cli.IntFlag{
 		Name:  "concurrent",
 		Value: 20,
-		Usage: "Run this many concurrent operations",
+		Usage: "ioFlags: Run this many concurrent operations",
 	},
 	cli.BoolFlag{
 		Name:  "noprefix",
-		Usage: "Do not use separate prefix for each thread",
+		Usage: "ioFlags: Do not use separate prefix for each thread",
 	},
 	cli.StringFlag{
 		Name:  "prefix",
-		Usage: "Use a custom prefix for each thread",
+		Usage: "ioFlags: Use a custom prefix for each thread",
 	},
 	cli.BoolFlag{
 		Name:  "disable-multipart",
-		Usage: "disable multipart uploads",
+		Usage: "ioFlags: disable multipart uploads",
 	},
 	cli.BoolFlag{
 		Name:  "md5",
-		Usage: "Add MD5 sum to uploads",
+		Usage: "ioFlags: Add MD5 sum to uploads",
 	},
 	cli.StringFlag{
 		Name:  "storage-class",
 		Value: "",
-		Usage: "Specify custom storage class, for instance 'STANDARD' or 'REDUCED_REDUNDANCY'.",
+		Usage: "ioFlags: Specify custom storage class, for instance 'STANDARD' or 'REDUCED_REDUNDANCY'.",
 	},
 	cli.BoolFlag{
 		Name:   "disable-http-keepalive",
-		Usage:  "Disable HTTP Keep-Alive",
+		Usage:  "ioFlags: Disable HTTP Keep-Alive",
 		Hidden: true,
 	},
 }

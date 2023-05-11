@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"s3stress/pkg"
+	"s3stress/pkg/utils"
 	"sort"
 	"strconv"
 	"time"
@@ -29,14 +30,14 @@ var (
 )
 
 const (
-	appName   = "stress"
-	appNameUC = "STRESS"
+	appName   = "s3stress"
+	appNameUC = "S3STRESS"
 )
 
 // Main starts stress
 func Main(args []string) {
 	// Set system max resources as needed.
-	setMaxResources()
+	utils.SetMaxResources()
 
 	if len(args) > 1 {
 		switch args[1] {
@@ -45,7 +46,7 @@ func Main(args []string) {
 			return
 		}
 	}
-	rand.Seed(time.Now().UnixNano())
+	rand.Seed(time.Now().UnixNano()) // 设置随机数种子，保证后续每次随机都是随机的
 
 	probe.Init() // Set project's root source path.
 	probe.SetAppInfo("Release-Tag", pkg.ReleaseTag)
@@ -70,7 +71,7 @@ func init() {
 	a := []cli.Command{
 		// mixedCmd,
 		// getCmd,
-		// putCmd,
+		putCmd,
 		// deleteCmd,
 		// listCmd,
 		// statCmd,

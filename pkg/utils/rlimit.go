@@ -1,4 +1,4 @@
-package cli
+package utils
 
 import (
 	"runtime/debug"
@@ -6,7 +6,7 @@ import (
 	"github.com/minio/pkg/sys"
 )
 
-func setMaxResources() (err error) {
+func SetMaxResources() (err error) {
 	// Set the Go runtime max threads threshold to 90% of kernel setting.
 	// Do not return when an error when encountered since it is not a crucial task.
 	sysMaxThreads, mErr := sys.GetMaxThreads()
