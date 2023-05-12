@@ -59,7 +59,7 @@ func (s *Snowball) Prepare(ctx context.Context) error {
 		}
 	}
 	s.prefixes = make(map[string]struct{}, s.Concurrency)
-	if err := s.createEmptyBucket(ctx); err != nil {
+	if err := s.CreateEmptyBucket(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -72,7 +72,7 @@ func (s *Snowball) Start(ctx context.Context, wait chan struct{}) (Operations, e
 	wg.Add(s.Concurrency)
 	c := NewCollector()
 	if s.AutoTermDur > 0 {
-		ctx = c.AutoTerm(ctx, http.MethodPut, s.AutoTermScale, autoTermCheck, autoTermSamples, s.AutoTermDur)
+		ctx = c.AutoTerm(ctx, http.MethodPut, s.AutoTermScale, AutoTermCheck, AutoTermSamples, s.AutoTermDur)
 	}
 	s.prefixes = make(map[string]struct{}, s.Concurrency)
 
@@ -197,5 +197,5 @@ func (s *Snowball) Cleanup(ctx context.Context) {
 	for p := range s.prefixes {
 		pf = append(pf, p)
 	}
-	s.deleteAllInBucket(ctx, pf...)
+	s.DeleteAllInBucket(ctx, pf...)
 }

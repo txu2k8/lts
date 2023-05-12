@@ -19,6 +19,7 @@ package cli
 
 import (
 	"net/http"
+	"s3stress/pkg/logger"
 	"strconv"
 	"strings"
 
@@ -67,11 +68,11 @@ func mainClient(ctx *cli.Context) error {
 		}
 	case 0:
 	default:
-		fatal(errInvalidArgument(), "Too many parameters")
+		logger.Fatal(errInvalidArgument(), "Too many parameters")
 	}
 	http.HandleFunc("/ws", serveWs)
 	console.Infoln("Listening on", addr)
-	fatalIf(probe.NewError(http.ListenAndServe(addr, nil)), "Unable to start client")
+	logger.FatalIf(probe.NewError(http.ListenAndServe(addr, nil)), "Unable to start client")
 	return nil
 }
 

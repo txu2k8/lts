@@ -3,13 +3,14 @@ package cli
 import (
 	"s3stress/client"
 	"s3stress/pkg/bench"
+	"s3stress/pkg/workflow/video"
 
 	"github.com/minio/cli"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/pkg/console"
 )
 
-var putFlags = []cli.Flag{
+var videoFlags = []cli.Flag{
 	cli.StringFlag{
 		Name:  "obj.size",
 		Value: "10MiB",
@@ -23,44 +24,44 @@ var putFlags = []cli.Flag{
 	},
 }
 
-// Put command.
-var putCmd = cli.Command{
-	Name:   "put",
-	Usage:  "benchmark put objects",
-	Action: mainPut,
+// Video command.
+var videoCmd = cli.Command{
+	Name:   "video",
+	Usage:  "video scene test",
+	Action: mainVideo,
 	Before: setGlobalsFromContext,
-	Flags:  combineFlags(aliasFlags, ioFlags, putFlags, genFlags, benchFlags, analyzeFlags, globalFlags),
+	Flags:  combineFlags(aliasFlags, ioFlags, videoFlags, genFlags, benchFlags, analyzeFlags, globalFlags),
 	CustomHelpTemplate: `NAME:
   {{.HelpName}} - {{.Usage}}
 
 USAGE:
   {{.HelpName}} [FLAGS]
-  -> see https://github.com/minio/warp#put
+  -> see https://github.com/txu2k8/s3stress#video
 
 FLAGS:
   {{range .VisibleFlags}}{{.}}
   {{end}}`,
 }
 
-// mainPut is the entry point for cp command.
-func mainPut(ctx *cli.Context) error {
-	checkPutSyntax(ctx)
+// mainVideo is the entry point for cp command.
+func mainVideo(ctx *cli.Context) error {
+	checkVideoSyntax(ctx)
 	src := newGenSource(ctx, "obj.size")
-	b := bench.Put{
+	b := video.VideoWorkflow{
 		Common: bench.Common{
 			Client:      client.NewClient(ctx),
 			Concurrency: ctx.Int("concurrent"),
 			Source:      src,
 			Bucket:      ctx.String("bucket"),
 			Location:    "",
-			PutOpts:     putOpts(ctx),
+			PutOpts:     videoOpts(ctx),
 		},
 	}
 	return runBench(ctx, &b)
 }
 
-// putOpts retrieves put options from the context.
-func putOpts(ctx *cli.Context) minio.PutObjectOptions {
+// videoOpts retrieves put options from the context.
+func videoOpts(ctx *cli.Context) minio.PutObjectOptions {
 	pSize, _ := toSize(ctx.String("part.size"))
 	return minio.PutObjectOptions{
 		ServerSideEncryption: newSSE(ctx),
@@ -71,11 +72,8 @@ func putOpts(ctx *cli.Context) minio.PutObjectOptions {
 	}
 }
 
-func checkPutSyntax(ctx *cli.Context) {
+func checkVideoSyntax(ctx *cli.Context) {
 	if ctx.NArg() > 0 {
 		console.Fatal("Command takes no arguments")
 	}
-
-	checkAnalyze(ctx)
-	checkBenchmark(ctx)
 }

@@ -28,8 +28,10 @@ import (
 	"time"
 
 	"s3stress/api"
+	"s3stress/config"
 	"s3stress/pkg/aggregate"
 	"s3stress/pkg/bench"
+	"s3stress/pkg/logger"
 
 	"github.com/fatih/color"
 	"github.com/klauspost/compress/zstd"
@@ -122,7 +124,7 @@ func mainAnalyze(ctx *cli.Context) error {
 	monitor := api.NewBenchmarkMonitor(ctx.String(serverFlagName))
 	defer monitor.Done()
 	log := console.Printf
-	if globalQuiet {
+	if config.GlobalQuiet {
 		log = nil
 	}
 	for _, arg := range args {
@@ -131,14 +133,14 @@ func mainAnalyze(ctx *cli.Context) error {
 			input = os.Stdin
 		} else {
 			f, err := os.Open(arg)
-			fatalIf(probe.NewError(err), "Unable to open input file")
+			logger.FatalIf(probe.NewError(err), "Unable to open input file")
 			defer f.Close()
 			input = f
 		}
 		err := zstdDec.Reset(input)
-		fatalIf(probe.NewError(err), "Unable to read input")
+		logger.FatalIf(probe.NewError(err), "Unable to read input")
 		ops, err := bench.OperationsFromCSV(zstdDec, true, ctx.Int("analyze.offset"), ctx.Int("analyze.limit"), log)
-		fatalIf(probe.NewError(err), "Unable to parse input")
+		logger.FatalIf(probe.NewError(err), "Unable to parse input")
 
 		printAnalysis(ctx, ops)
 		monitor.OperationsReady(ops, strings.TrimSuffix(filepath.Base(arg), ".csv.zst"), commandLine(ctx))
@@ -243,7 +245,7 @@ func printAnalysis(ctx *cli.Context, o bench.Operations) {
 			wrSegs = os.Stdout
 		} else {
 			f, err := os.Create(fn)
-			fatalIf(probe.NewError(err), "Unable to create create analysis output")
+			logger.FatalIf(probe.NewError(err), "Unable to create create analysis output")
 			defer console.Println("Aggregated data saved to", fn)
 			defer f.Close()
 			wrSegs = f
@@ -284,9 +286,9 @@ func printAnalysis(ctx *cli.Context, o bench.Operations) {
 		}
 	}
 
-	if globalJSON {
+	if config.GlobalJSON {
 		b, err := json.MarshalIndent(aggr, "", "  ")
-		fatalIf(probe.NewError(err), "Unable to marshal data.")
+		logger.FatalIf(probe.NewError(err), "Unable to marshal data.")
 		if err != nil {
 			console.Errorln(err)
 		}
@@ -417,7 +419,7 @@ func writeSegs(ctx *cli.Context, wrSegs io.Writer, ops bench.Operations, allThre
 
 	segs.SortByTime()
 	err := segs.CSV(wrSegs)
-	errorIf(probe.NewError(err), "Error writing analysis")
+	logger.ErrorIf(probe.NewError(err), "Error writing analysis")
 	start := segs[0].Start
 	wantSegs := len(segs)
 
@@ -445,7 +447,7 @@ func writeSegs(ctx *cli.Context, wrSegs io.Writer, ops bench.Operations, allThre
 			}
 			segs.SortByTime()
 			err := segs.CSV(wrSegs)
-			errorIf(probe.NewError(err), "Error writing analysis")
+			logger.ErrorIf(probe.NewError(err), "Error writing analysis")
 		}
 	}
 }
@@ -628,13 +630,13 @@ func analysisDur(ctx *cli.Context, total time.Duration) time.Duration {
 		}
 	}
 	d, err := time.ParseDuration(dur)
-	fatalIf(probe.NewError(err), "Invalid -analyze.dur value")
+	logger.FatalIf(probe.NewError(err), "Invalid -analyze.dur value")
 	return d
 }
 
 func checkAnalyze(ctx *cli.Context) {
 	if analysisDur(ctx, time.Minute) == 0 {
 		err := errors.New("-analyze.dur cannot be 0")
-		fatal(probe.NewError(err), "Invalid -analyze.dur value")
+		logger.Fatal(probe.NewError(err), "Invalid -analyze.dur value")
 	}
 }

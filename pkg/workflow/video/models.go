@@ -1,5 +1,5 @@
-// 视频监控场景 数据模型
-package video_scense
+// 场景：视频监控 - 数据模型
+package video
 
 // VideoBaseInfo 原始需求信息
 type VideoBaseInfo struct {

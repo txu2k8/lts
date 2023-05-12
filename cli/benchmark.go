@@ -13,7 +13,10 @@ import (
 	"time"
 
 	"s3stress/api"
+	"s3stress/client"
+	"s3stress/config"
 	"s3stress/pkg/bench"
+	"s3stress/pkg/logger"
 	"s3stress/pkg/utils"
 
 	"github.com/cheggaaa/pb"
@@ -81,18 +84,18 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 	activeBenchmarkMu.Lock()
 	ab := activeBenchmark
 	activeBenchmarkMu.Unlock()
-	b.GetCommon().Error = printError
+	b.GetCommon().Error = logger.PrintError
 	if ab != nil {
 		b.GetCommon().ClientIdx = ab.clientIdx
 		return runClientBenchmark(ctx, b, ab)
 	}
 	if done, err := runServerBenchmark(ctx, b); done || err != nil {
-		fatalIf(probe.NewError(err), "Error running remote benchmark")
+		logger.FatalIf(probe.NewError(err), "Error running remote benchmark")
 		return nil
 	}
 
 	monitor := api.NewBenchmarkMonitor(ctx.String(serverFlagName))
-	monitor.SetLnLoggers(printInfo, printError)
+	monitor.SetLnLoggers(logger.PrintInfo, logger.PrintError)
 	defer monitor.Done()
 
 	monitor.InfoLn("Preparing server.")
@@ -104,7 +107,7 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 		c.AutoTermDur = ctx.Duration("autoterm.dur")
 		c.AutoTermScale = ctx.Float64("autoterm.pct") / 100
 	}
-	if !globalQuiet && !globalJSON {
+	if !config.GlobalQuiet && !config.GlobalJSON {
 		c.PrepareProgress = make(chan float64, 1)
 		const pgScale = 10000
 		pg := utils.NewProgressBar(pgScale, pb.U_NO)
@@ -147,7 +150,7 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 	}
 
 	err := b.Prepare(context.Background())
-	fatalIf(probe.NewError(err), "Error preparing server")
+	logger.FatalIf(probe.NewError(err), "Error preparing server")
 	if c.PrepareProgress != nil {
 		close(c.PrepareProgress)
 		<-pgDone
@@ -155,7 +158,7 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 
 	if ap, ok := b.(AfterPreparer); ok {
 		err := ap.AfterPrepare(context.Background())
-		fatalIf(probe.NewError(err), "Error preparing server")
+		logger.FatalIf(probe.NewError(err), "Error preparing server")
 	}
 
 	// Start after waiting a second or until we reached the start time.
@@ -184,14 +187,14 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 	fileName := ctx.String("benchdata")
 	cID := pRandASCII(4)
 	if fileName == "" {
-		fileName = fmt.Sprintf("%s-%s-%s-%s", appName, ctx.Command.Name, time.Now().Format("2006-01-02[150405]"), cID)
+		fileName = fmt.Sprintf("%s-%s-%s-%s", config.AppName, ctx.Command.Name, time.Now().Format("2006-01-02[150405]"), cID)
 	}
 
 	prof, err := startProfiling(ctx2, ctx)
-	fatalIf(probe.NewError(err), "Unable to start profile.")
+	logger.FatalIf(probe.NewError(err), "Unable to start profile.")
 	monitor.InfoLn("Starting benchmark in ", time.Until(tStart).Round(time.Second), "...")
 	pgDone = make(chan struct{})
-	if !globalQuiet && !globalJSON {
+	if !config.GlobalQuiet && !config.GlobalJSON {
 		pg := utils.NewProgressBar(int64(benchDur), pb.U_DURATION)
 		go func() {
 			defer close(pgDone)
@@ -238,11 +241,11 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 		func() {
 			defer f.Close()
 			enc, err := zstd.NewWriter(f, zstd.WithEncoderLevel(zstd.SpeedBetterCompression))
-			fatalIf(probe.NewError(err), "Unable to compress benchmark output")
+			logger.FatalIf(probe.NewError(err), "Unable to compress benchmark output")
 
 			defer enc.Close()
 			err = ops.CSV(enc, commandLine(ctx))
-			fatalIf(probe.NewError(err), "Unable to write benchmark output")
+			logger.FatalIf(probe.NewError(err), "Unable to write benchmark output")
 
 			monitor.InfoLn(fmt.Sprintf("Benchmark data written to %q\n", fileName+".csv.zst"))
 		}()
@@ -396,7 +399,7 @@ func runClientBenchmark(ctx *cli.Context, b bench.Benchmark, cb *clientBenchmark
 	fileName := ctx.String("benchdata")
 	cID := pRandASCII(6)
 	if fileName == "" {
-		fileName = fmt.Sprintf("%s-%s-%s-%s", appName, ctx.Command.Name, time.Now().Format("2006-01-02[150405]"), cID)
+		fileName = fmt.Sprintf("%s-%s-%s-%s", config.AppName, ctx.Command.Name, time.Now().Format("2006-01-02[150405]"), cID)
 	}
 
 	ops, err := b.Start(ctx2, start)
@@ -417,11 +420,11 @@ func runClientBenchmark(ctx *cli.Context, b bench.Benchmark, cb *clientBenchmark
 		func() {
 			defer f.Close()
 			enc, err := zstd.NewWriter(f, zstd.WithEncoderLevel(zstd.SpeedBetterCompression))
-			fatalIf(probe.NewError(err), "Unable to compress benchmark output")
+			logger.FatalIf(probe.NewError(err), "Unable to compress benchmark output")
 
 			defer enc.Close()
 			err = ops.CSV(enc, commandLine(ctx))
-			fatalIf(probe.NewError(err), "Unable to write benchmark output")
+			logger.FatalIf(probe.NewError(err), "Unable to write benchmark output")
 
 			console.Infof("Benchmark data written to %q\n", fileName+".csv.zst")
 		}()
@@ -450,7 +453,7 @@ func startProfiling(ctx2 context.Context, ctx *cli.Context) (*runningProfiles, e
 		return nil, nil
 	}
 	var r runningProfiles
-	r.client = newAdminClient(ctx)
+	r.client = client.NewAdminClient(ctx)
 
 	// Start profile
 	_, cmdErr := r.client.StartProfiling(ctx2, madmin.ProfilerType(prof))
@@ -468,7 +471,7 @@ func (rp *runningProfiles) stop(ctx2 context.Context, ctx *cli.Context, fileName
 
 	// Ask for profile data, which will come compressed with zip format
 	zippedData, adminErr := rp.client.DownloadProfilingData(ctx2)
-	fatalIf(probe.NewError(adminErr), "Unable to download profile data.")
+	logger.FatalIf(probe.NewError(adminErr), "Unable to download profile data.")
 	defer zippedData.Close()
 
 	f, err := os.Create(fileName)
@@ -511,22 +514,22 @@ func checkBenchmark(ctx *cli.Context) {
 			}
 		}
 		if !supportedProfiler {
-			fatalIf(errDummy(), "Profiler type %s unrecognized. Possible values are: %v.", profilerType, profilerTypes)
+			logger.FatalIf(errDummy(), "Profiler type %s unrecognized. Possible values are: %v.", profilerType, profilerTypes)
 		}
 	}
 	if st := ctx.String("syncstart"); st != "" {
 		t := parseLocalTime(st)
 		if t.Before(time.Now()) {
-			fatalIf(errDummy(), "syncstart is in the past: %v", t)
+			logger.FatalIf(errDummy(), "syncstart is in the past: %v", t)
 		}
 	}
 	if ctx.Bool("autoterm") {
 		// TODO: autoterm cannot be used when in client/server mode
 		if ctx.Duration("autoterm.dur") <= 0 {
-			fatalIf(errDummy(), "autoterm.dur cannot be zero or negative")
+			logger.FatalIf(errDummy(), "autoterm.dur cannot be zero or negative")
 		}
 		if ctx.Float64("autoterm.pct") <= 0 {
-			fatalIf(errDummy(), "autoterm.pct cannot be zero or negative")
+			logger.FatalIf(errDummy(), "autoterm.pct cannot be zero or negative")
 		}
 	}
 }
@@ -536,7 +539,7 @@ const timeLayout = "15:04"
 
 func parseLocalTime(s string) time.Time {
 	t, err := time.ParseInLocation(timeLayout, s, time.Local)
-	fatalIf(probe.NewError(err), "Unable to parse time: %s", s)
+	logger.FatalIf(probe.NewError(err), "Unable to parse time: %s", s)
 	now := time.Now()
 	y, m, d := now.Date()
 	t = t.AddDate(y, int(m)-1, d-1)

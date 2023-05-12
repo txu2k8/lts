@@ -46,7 +46,7 @@ type List struct {
 // Prepare will create an empty bucket or delete any content already there
 // and upload a number of objects.
 func (d *List) Prepare(ctx context.Context) error {
-	if err := d.createEmptyBucket(ctx); err != nil {
+	if err := d.CreateEmptyBucket(ctx); err != nil {
 		return err
 	}
 	if d.Versions > 1 {
@@ -173,7 +173,7 @@ func (d *List) Start(ctx context.Context, wait chan struct{}) (Operations, error
 	wg.Add(d.Concurrency)
 	c := d.Collector
 	if d.AutoTermDur > 0 {
-		ctx = c.AutoTerm(ctx, "LIST", d.AutoTermScale, autoTermCheck, autoTermSamples, d.AutoTermDur)
+		ctx = c.AutoTerm(ctx, "LIST", d.AutoTermScale, AutoTermCheck, AutoTermSamples, d.AutoTermDur)
 	}
 	// Non-terminating context.
 	nonTerm := context.Background()
@@ -249,5 +249,5 @@ func (d *List) Start(ctx context.Context, wait chan struct{}) (Operations, error
 
 // Cleanup deletes everything uploaded to the bucket.
 func (d *List) Cleanup(ctx context.Context) {
-	d.deleteAllInBucket(ctx, generator.MergeObjectPrefixes(d.objects)...)
+	d.DeleteAllInBucket(ctx, generator.MergeObjectPrefixes(d.objects)...)
 }

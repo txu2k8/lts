@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	"s3stress/config"
 	"s3stress/pkg/bench"
 
 	"github.com/minio/cli"
@@ -85,7 +86,7 @@ func (s serverRequest) executeBenchmark(ctx context.Context) (*clientBenchmark, 
 	activeBenchmarkMu.Unlock()
 
 	console.Infoln("Executing", cmd.Name, "benchmark.")
-	if globalDebug {
+	if config.GlobalDebug {
 		// params have secret, so disable by default.
 		console.Infoln("Params:", s.Benchmark.Flags, ctx2.Args())
 	}
@@ -173,7 +174,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 			console.Error("Reading server message:", err.Error())
 			return
 		}
-		if globalDebug {
+		if config.GlobalDebug {
 			console.Infof("Request: %v\n", req.Operation)
 		}
 		var resp clientReply
@@ -287,7 +288,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 			resp.Err = "unknown command"
 		}
 		resp.Time = time.Now()
-		if globalDebug {
+		if config.GlobalDebug {
 			console.Infof("Sending %v\n", resp.Type)
 		}
 		err = ws.WriteJSON(resp)

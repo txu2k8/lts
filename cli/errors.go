@@ -2,6 +2,7 @@ package cli
 
 import (
 	"errors"
+	"s3stress/config"
 
 	"github.com/minio/mc/pkg/probe"
 )
@@ -16,6 +17,6 @@ var errDummy = func() *probe.Error {
 type invalidArgumentErr error
 
 var errInvalidArgument = func() *probe.Error {
-	msg := "Invalid arguments provided, please refer " + "`" + appName + " <command> -h` for relevant documentation."
+	msg := "Invalid arguments provided, please refer " + "`" + config.AppName + " <command> -h` for relevant documentation."
 	return probe.NewError(invalidArgumentErr(errors.New(msg))).Untrace()
 }

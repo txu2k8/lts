@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 	"os"
+	"s3stress/client"
+	"s3stress/config"
 
 	"github.com/minio/cli"
 	"github.com/minio/pkg/console"
@@ -90,13 +92,13 @@ func setGlobalsFromContext(ctx *cli.Context) error {
 
 // Set global states. NOTE: It is deliberately kept monolithic to ensure we dont miss out any flags.
 func setGlobals(quiet, debug, json, noColor bool) {
-	globalQuiet = globalQuiet || quiet
-	globalDebug = globalDebug || debug
-	globalJSON = globalJSON || json
-	globalNoColor = globalNoColor || noColor
+	config.GlobalQuiet = config.GlobalQuiet || quiet
+	config.GlobalDebug = config.GlobalDebug || debug
+	config.GlobalJSON = config.GlobalJSON || json
+	config.GlobalNoColor = config.GlobalNoColor || noColor
 
 	// Disable colorified messages if requested.
-	if globalNoColor || globalQuiet {
+	if config.GlobalNoColor || config.GlobalQuiet {
 		console.SetColorOff()
 	}
 }
@@ -124,30 +126,30 @@ var aliasFlags = []cli.Flag{
 	cli.StringFlag{
 		Name:   "endpoint",
 		Usage:  "aliasFlag: endpoint. Multiple endpoints can be specified as a comma separated list.",
-		EnvVar: appNameUC + "_ENDPOINT",
+		EnvVar: config.AppNameUC + "_ENDPOINT",
 		Value:  "127.0.0.1:6600",
 	},
 	cli.StringFlag{
 		Name:   "access-key",
 		Usage:  "aliasFlag: Specify access key",
-		EnvVar: appNameUC + "_ACCESS_KEY",
+		EnvVar: config.AppNameUC + "_ACCESS_KEY",
 		Value:  "",
 	},
 	cli.StringFlag{
 		Name:   "secret-key",
 		Usage:  "aliasFlag: Specify secret key",
-		EnvVar: appNameUC + "_SECRET_KEY",
+		EnvVar: config.AppNameUC + "_SECRET_KEY",
 		Value:  "",
 	},
 	cli.BoolFlag{
 		Name:   "tls",
 		Usage:  "aliasFlag: Use TLS (HTTPS) for transport",
-		EnvVar: appNameUC + "_TLS",
+		EnvVar: config.AppNameUC + "_TLS",
 	},
 	cli.StringFlag{
 		Name:   "region",
 		Usage:  "aliasFlag: Specify a custom region",
-		EnvVar: appNameUC + "_REGION",
+		EnvVar: config.AppNameUC + "_REGION",
 		Hidden: true,
 	},
 	cli.StringFlag{
@@ -158,8 +160,8 @@ var aliasFlags = []cli.Flag{
 	},
 	cli.StringFlag{
 		Name:  "host-select",
-		Value: string(hostSelectTypeWeighed),
-		Usage: fmt.Sprintf("aliasFlag: Host selection algorithm. Can be %q or %q", hostSelectTypeWeighed, hostSelectTypeRoundrobin),
+		Value: string(client.HostSelectTypeWeighed),
+		Usage: fmt.Sprintf("aliasFlag: Host selection algorithm. Can be %q or %q", client.HostSelectTypeWeighed, client.HostSelectTypeRoundrobin),
 	},
 	cli.BoolFlag{
 		Name:   "resolve-host",
@@ -176,7 +178,7 @@ var ioFlags = []cli.Flag{
 	},
 	cli.StringFlag{
 		Name:  "bucket",
-		Value: appName + "-benchmark-bucket",
+		Value: config.AppName + "-benchmark-bucket",
 		Usage: "ioFlags: Bucket to use for benchmark data. ALL DATA WILL BE DELETED IN BUCKET!",
 	},
 	cli.IntFlag{

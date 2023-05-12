@@ -1,4 +1,4 @@
-package video_scense
+package video
 
 // 打印计算结果
 func (v *VideoInfo) printVideoInfo() bool {

@@ -45,7 +45,7 @@ type Stat struct {
 // Prepare will create an empty bucket or delete any content already there
 // and upload a number of objects.
 func (g *Stat) Prepare(ctx context.Context) error {
-	if err := g.createEmptyBucket(ctx); err != nil {
+	if err := g.CreateEmptyBucket(ctx); err != nil {
 		return err
 	}
 	if g.Versions > 1 {
@@ -153,7 +153,7 @@ func (g *Stat) Start(ctx context.Context, wait chan struct{}) (Operations, error
 	wg.Add(g.Concurrency)
 	c := g.Collector
 	if g.AutoTermDur > 0 {
-		ctx = c.AutoTerm(ctx, "STAT", g.AutoTermScale, autoTermCheck, autoTermSamples, g.AutoTermDur)
+		ctx = c.AutoTerm(ctx, "STAT", g.AutoTermScale, AutoTermCheck, AutoTermSamples, g.AutoTermDur)
 	}
 	// Non-terminating context.
 	nonTerm := context.Background()
@@ -213,5 +213,5 @@ func (g *Stat) Start(ctx context.Context, wait chan struct{}) (Operations, error
 
 // Cleanup deletes everything uploaded to the bucket.
 func (g *Stat) Cleanup(ctx context.Context) {
-	g.deleteAllInBucket(ctx, g.objects.Prefixes()...)
+	g.DeleteAllInBucket(ctx, g.objects.Prefixes()...)
 }

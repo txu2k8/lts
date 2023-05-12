@@ -1,55 +1,42 @@
-/*
- * Warp (C) 2019-2020 MinIO, Inc.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-package bench
+package workflow
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"math"
+	"s3stress/pkg/bench"
+	"s3stress/pkg/generator"
 	"strings"
 	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/pkg/console"
-	"github.com/minio/warp/pkg/generator"
 )
 
-type Benchmark interface {
-	// Prepare for the benchmark run
+type Workflow interface {
+	// Init for the workflow run -- new bucket
+	Init(ctx context.Context) error
+
+	// Prepare for the workflow run  -- data prepare
 	Prepare(ctx context.Context) error
 
-	// Start will execute the main benchmark.
+	// Start will execute the main workflow.
 	// Operations should begin executing when the start channel is closed.
-	Start(ctx context.Context, wait chan struct{}) (Operations, error)
+	Start(ctx context.Context, wait chan struct{}) (bench.Operations, error)
 
-	// Clean up after the benchmark run.
+	// Clean up after the workflow run.
 	Cleanup(ctx context.Context)
 
 	// Common returns the common parameters.
 	GetCommon() *Common
 }
 
-// Common contains common benchmark parameters.
+// Common contains common workflow parameters.
 type Common struct {
 	Client func() (cl *minio.Client, done func())
 
-	Concurrency int
+	Concurrency int // 并发数
 	Source      func() generator.Source
 	Bucket      string
 	Location    string

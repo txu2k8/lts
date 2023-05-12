@@ -1,21 +1,4 @@
-/*
- * Warp (C) 2019-2020 MinIO, Inc.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-package cli
+package client
 
 import (
 	"crypto/tls"
@@ -27,6 +10,8 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"s3stress/config"
+	"s3stress/pkg/logger"
 	"strings"
 	"sync"
 	"time"
@@ -47,18 +32,18 @@ import (
 type hostSelectType string
 
 const (
-	hostSelectTypeRoundrobin hostSelectType = "roundrobin"
-	hostSelectTypeWeighed    hostSelectType = "weighed"
+	HostSelectTypeRoundrobin hostSelectType = "roundrobin"
+	HostSelectTypeWeighed    hostSelectType = "weighed"
 )
 
-func newClient(ctx *cli.Context) func() (cl *minio.Client, done func()) {
-	hosts := parseHosts(ctx.String("endpoint"), ctx.Bool("resolve-host"))
+func NewClient(ctx *cli.Context) func() (cl *minio.Client, done func()) {
+	hosts := ParseHosts(ctx.String("endpoint"), ctx.Bool("resolve-host"))
 	switch len(hosts) {
 	case 0:
-		fatalIf(probe.NewError(errors.New("no host defined")), "Unable to create MinIO client")
+		logger.FatalIf(probe.NewError(errors.New("no host defined")), "Unable to create MinIO client")
 	case 1:
 		cl, err := getClient(ctx, hosts[0])
-		fatalIf(probe.NewError(err), "Unable to create MinIO client")
+		logger.FatalIf(probe.NewError(err), "Unable to create MinIO client")
 
 		return func() (*minio.Client, func()) {
 			return cl, func() {}
@@ -66,14 +51,14 @@ func newClient(ctx *cli.Context) func() (cl *minio.Client, done func()) {
 	}
 	hostSelect := hostSelectType(ctx.String("host-select"))
 	switch hostSelect {
-	case hostSelectTypeRoundrobin:
+	case HostSelectTypeRoundrobin:
 		// Do round-robin.
 		var current int
 		var mu sync.Mutex
 		clients := make([]*minio.Client, len(hosts))
 		for i := range hosts {
 			cl, err := getClient(ctx, hosts[i])
-			fatalIf(probe.NewError(err), "Unable to create MinIO client")
+			logger.FatalIf(probe.NewError(err), "Unable to create MinIO client")
 			clients[i] = cl
 		}
 		return func() (*minio.Client, func()) {
@@ -83,14 +68,14 @@ func newClient(ctx *cli.Context) func() (cl *minio.Client, done func()) {
 			mu.Unlock()
 			return clients[now], func() {}
 		}
-	case hostSelectTypeWeighed:
+	case HostSelectTypeWeighed:
 		// Keep track of handed out clients.
 		// Select random between the clients that have the fewest handed out.
 		var mu sync.Mutex
 		clients := make([]*minio.Client, len(hosts))
 		for i := range hosts {
 			cl, err := getClient(ctx, hosts[i])
-			fatalIf(probe.NewError(err), "Unable to create MinIO client")
+			logger.FatalIf(probe.NewError(err), "Unable to create MinIO client")
 			clients[i] = cl
 		}
 		running := make([]int, len(hosts))
@@ -154,7 +139,7 @@ func getClient(ctx *cli.Context, host string) (*minio.Client, error) {
 		// if Signature version '2' use NewV2 directly.
 		creds = credentials.NewStaticV2(ctx.String("access-key"), ctx.String("secret-key"), "")
 	default:
-		fatal(probe.NewError(errors.New("unknown signature method. S3V2 and S3V4 is available")), strings.ToUpper(ctx.String("signature")))
+		logger.Fatal(probe.NewError(errors.New("unknown signature method. S3V2 and S3V4 is available")), strings.ToUpper(ctx.String("signature")))
 	}
 
 	cl, err := minio.New(host, &minio.Options{
@@ -168,7 +153,7 @@ func getClient(ctx *cli.Context, host string) (*minio.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	cl.SetAppInfo(appName, pkg.Version)
+	cl.SetAppInfo(config.AppName, pkg.Version)
 
 	if ctx.Bool("debug") {
 		cl.TraceOn(os.Stderr)
@@ -219,8 +204,8 @@ func clientTransport(ctx *cli.Context) http.RoundTripper {
 	return tr
 }
 
-// parseHosts will parse the host parameter given.
-func parseHosts(h string, resolveDNS bool) []string {
+// ParseHosts will parse the host parameter given.
+func ParseHosts(h string, resolveDNS bool) []string {
 	hosts := strings.Split(h, ",")
 	var dst []string
 	for _, host := range hosts {
@@ -230,7 +215,7 @@ func parseHosts(h string, resolveDNS bool) []string {
 		}
 		patterns, perr := ellipses.FindEllipsesPatterns(host)
 		if perr != nil {
-			fatalIf(probe.NewError(perr), "Unable to parse host parameter")
+			logger.FatalIf(probe.NewError(perr), "Unable to parse host parameter")
 
 			log.Fatal(perr.Error())
 		}
@@ -251,7 +236,7 @@ func parseHosts(h string, resolveDNS bool) []string {
 		}
 		ips, err := net.LookupIP(host)
 		if err != nil {
-			fatalIf(probe.NewError(err), "Could not get IPs for "+hostport)
+			logger.FatalIf(probe.NewError(err), "Could not get IPs for "+hostport)
 			log.Fatal(err.Error())
 		}
 		for _, ip := range ips {
@@ -277,14 +262,14 @@ func mustGetSystemCertPool() *x509.CertPool {
 	return rootCAs
 }
 
-func newAdminClient(ctx *cli.Context) *madmin.AdminClient {
-	hosts := parseHosts(ctx.String("host"), ctx.Bool("resolve-host"))
+func NewAdminClient(ctx *cli.Context) *madmin.AdminClient {
+	hosts := ParseHosts(ctx.String("host"), ctx.Bool("resolve-host"))
 	if len(hosts) == 0 {
-		fatalIf(probe.NewError(errors.New("no host defined")), "Unable to create MinIO admin client")
+		logger.FatalIf(probe.NewError(errors.New("no host defined")), "Unable to create MinIO admin client")
 	}
 	cl, err := madmin.New(hosts[0], ctx.String("access-key"), ctx.String("secret-key"), ctx.Bool("tls"))
-	fatalIf(probe.NewError(err), "Unable to create MinIO admin client")
+	logger.FatalIf(probe.NewError(err), "Unable to create MinIO admin client")
 	cl.SetCustomTransport(clientTransport(ctx))
-	cl.SetAppInfo(appName, pkg.Version)
+	cl.SetAppInfo(config.AppName, pkg.Version)
 	return cl
 }

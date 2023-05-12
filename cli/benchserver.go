@@ -11,9 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"s3stress/pkg/bench"
-
 	"s3stress/api"
+	"s3stress/client"
+	"s3stress/config"
+	"s3stress/pkg/bench"
+	"s3stress/pkg/logger"
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/minio/cli"
@@ -77,16 +79,16 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 		return false, nil
 	}
 
-	conns := newConnections(parseHosts(ctx.String("warp-client"), false))
+	conns := newConnections(client.ParseHosts(ctx.String("warp-client"), false))
 	if len(conns.hosts) == 0 {
 		return true, errors.New("no hosts")
 	}
-	conns.info = printInfo
-	conns.errLn = printError
+	conns.info = logger.PrintInfo
+	conns.errLn = logger.PrintError
 	defer conns.closeAll()
 	monitor := api.NewBenchmarkMonitor(ctx.String(serverFlagName))
 	defer monitor.Done()
-	monitor.SetLnLoggers(printInfo, printError)
+	monitor.SetLnLoggers(logger.PrintInfo, logger.PrintError)
 	infoLn := monitor.InfoLn
 	errorLn := monitor.Errorln
 
@@ -128,9 +130,9 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 	// Connect to hosts, send benchmark requests.
 	for i := range conns.hosts {
 		resp, err := conns.roundTrip(i, req)
-		fatalIf(probe.NewError(err), "Unable to send benchmark info to warp client")
+		logger.FatalIf(probe.NewError(err), "Unable to send benchmark info to warp client")
 		if resp.Err != "" {
-			fatalIf(probe.NewError(errors.New(resp.Err)), "Error received from warp client")
+			logger.FatalIf(probe.NewError(errors.New(resp.Err)), "Error received from warp client")
 		}
 		infoLn("Client ", conns.hostName(i), " connected...")
 		// Assume ok.
@@ -141,11 +143,11 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 	_ = conns.startStageAll(stagePrepare, time.Now().Add(time.Second), true)
 	err := conns.waitForStage(stagePrepare, true, common)
 	if err != nil {
-		fatalIf(probe.NewError(err), "Failed to prepare")
+		logger.FatalIf(probe.NewError(err), "Failed to prepare")
 	}
 	if ap, ok := b.(AfterPreparer); ok {
 		err := ap.AfterPrepare(context.Background())
-		fatalIf(probe.NewError(err), "Error preparing server")
+		logger.FatalIf(probe.NewError(err), "Error preparing server")
 	}
 
 	infoLn("All clients prepared...")
@@ -168,7 +170,7 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 
 	fileName := ctx.String("benchdata")
 	if fileName == "" {
-		fileName = fmt.Sprintf("%s-%s-%s-%s", appName, "remote", time.Now().Format("2006-01-02[150405]"), pRandASCII(4))
+		fileName = fmt.Sprintf("%s-%s-%s-%s", config.AppName, "remote", time.Now().Format("2006-01-02[150405]"), pRandASCII(4))
 	}
 	prof.stop(context.Background(), ctx, fileName+".profiles.zip")
 
@@ -194,11 +196,11 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 		func() {
 			defer f.Close()
 			enc, err := zstd.NewWriter(f, zstd.WithEncoderLevel(zstd.SpeedBetterCompression))
-			fatalIf(probe.NewError(err), "Unable to compress benchmark output")
+			logger.FatalIf(probe.NewError(err), "Unable to compress benchmark output")
 
 			defer enc.Close()
 			err = allOps.CSV(enc, commandLine(ctx))
-			fatalIf(probe.NewError(err), "Unable to write benchmark output")
+			logger.FatalIf(probe.NewError(err), "Unable to write benchmark output")
 
 			infoLn(fmt.Sprintf("Benchmark data written to %q\n", fileName+".csv.zst"))
 		}()
@@ -399,7 +401,7 @@ func (c *connections) startStageAll(stage benchmarkStage, startAt time.Time, fai
 			err := c.startStage(i, startAt, stage)
 			if err != nil {
 				if failOnErr {
-					fatalIf(probe.NewError(err), "Stage start failed.")
+					logger.FatalIf(probe.NewError(err), "Stage start failed.")
 				}
 				c.errLn("Starting stage error:", err)
 				mu.Lock()
@@ -470,7 +472,7 @@ func (c *connections) waitForStage(stage benchmarkStage, failOnErr bool, common 
 				if err != nil {
 					c.disconnect(i)
 					if failOnErr {
-						fatalIf(probe.NewError(err), "Stage failed.")
+						logger.FatalIf(probe.NewError(err), "Stage failed.")
 					}
 					c.errLn(err)
 					return
@@ -478,7 +480,7 @@ func (c *connections) waitForStage(stage benchmarkStage, failOnErr bool, common 
 				if resp.Err != "" {
 					c.disconnect(i)
 					if failOnErr {
-						fatalIf(probe.NewError(errors.New(resp.Err)), "Stage failed. Client %v returned error.", c.hostName(i))
+						logger.FatalIf(probe.NewError(errors.New(resp.Err)), "Stage failed. Client %v returned error.", c.hostName(i))
 					}
 					c.errorF("Client %v returned error: %v\n", c.hostName(i), resp.Err)
 					return

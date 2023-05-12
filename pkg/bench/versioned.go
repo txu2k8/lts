@@ -50,7 +50,7 @@ func (g *Versioned) Prepare(ctx context.Context) error {
 	if g.CreateObjects <= g.Concurrency {
 		return errors.New("initial number of objects should be at least matching concurrency")
 	}
-	if err := g.createEmptyBucket(ctx); err != nil {
+	if err := g.CreateEmptyBucket(ctx); err != nil {
 		return err
 	}
 	if !g.Versioned {
@@ -131,7 +131,7 @@ func (g *Versioned) Start(ctx context.Context, wait chan struct{}) (Operations, 
 	wg.Add(g.Concurrency)
 	c := g.Collector
 	if g.AutoTermDur > 0 {
-		ctx = c.AutoTerm(ctx, "", g.AutoTermScale, autoTermCheck, autoTermSamples, g.AutoTermDur)
+		ctx = c.AutoTerm(ctx, "", g.AutoTermScale, AutoTermCheck, AutoTermSamples, g.AutoTermDur)
 	}
 	// Non-terminating context.
 	nonTerm := context.Background()
@@ -288,7 +288,7 @@ func (g *Versioned) Start(ctx context.Context, wait chan struct{}) (Operations, 
 
 // Cleanup deletes everything uploaded to the bucket.
 func (g *Versioned) Cleanup(ctx context.Context) {
-	g.deleteAllInBucket(ctx, g.Dist.Objects().Prefixes()...)
+	g.DeleteAllInBucket(ctx, g.Dist.Objects().Prefixes()...)
 }
 
 type versionedObj struct {

@@ -153,7 +153,7 @@ func (g *Mixed) Prepare(ctx context.Context) error {
 	if g.CreateObjects <= g.Concurrency {
 		return errors.New("initial number of objects should be at least matching concurrency")
 	}
-	if err := g.createEmptyBucket(ctx); err != nil {
+	if err := g.CreateEmptyBucket(ctx); err != nil {
 		return err
 	}
 	src := g.Source()
@@ -225,7 +225,7 @@ func (g *Mixed) Start(ctx context.Context, wait chan struct{}) (Operations, erro
 	wg.Add(g.Concurrency)
 	c := g.Collector
 	if g.AutoTermDur > 0 {
-		ctx = c.AutoTerm(ctx, "", g.AutoTermScale, autoTermCheck, autoTermSamples, g.AutoTermDur)
+		ctx = c.AutoTerm(ctx, "", g.AutoTermScale, AutoTermCheck, AutoTermSamples, g.AutoTermDur)
 	}
 	// Non-terminating context.
 	nonTerm := context.Background()
@@ -382,5 +382,5 @@ func (g *Mixed) Start(ctx context.Context, wait chan struct{}) (Operations, erro
 
 // Cleanup deletes everything uploaded to the bucket.
 func (g *Mixed) Cleanup(ctx context.Context) {
-	g.deleteAllInBucket(ctx, g.Dist.Objects().Prefixes()...)
+	g.DeleteAllInBucket(ctx, g.Dist.Objects().Prefixes()...)
 }

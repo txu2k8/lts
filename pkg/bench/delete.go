@@ -43,7 +43,7 @@ type Delete struct {
 // Prepare will create an empty bucket or delete any content already there
 // and upload a number of objects.
 func (d *Delete) Prepare(ctx context.Context) error {
-	if err := d.createEmptyBucket(ctx); err != nil {
+	if err := d.CreateEmptyBucket(ctx); err != nil {
 		return err
 	}
 	src := d.Source()
@@ -137,7 +137,7 @@ func (d *Delete) Start(ctx context.Context, wait chan struct{}) (Operations, err
 	wg.Add(d.Concurrency)
 	c := d.Collector
 	if d.AutoTermDur > 0 {
-		ctx = c.AutoTerm(ctx, http.MethodDelete, d.AutoTermScale, autoTermCheck, autoTermSamples, d.AutoTermDur)
+		ctx = c.AutoTerm(ctx, http.MethodDelete, d.AutoTermScale, AutoTermCheck, AutoTermSamples, d.AutoTermDur)
 	}
 	// Non-terminating context.
 	nonTerm := context.Background()
@@ -214,6 +214,6 @@ func (d *Delete) Start(ctx context.Context, wait chan struct{}) (Operations, err
 // Cleanup deletes everything uploaded to the bucket.
 func (d *Delete) Cleanup(ctx context.Context) {
 	if len(d.objects) > 0 {
-		d.deleteAllInBucket(ctx, d.objects.Prefixes()...)
+		d.DeleteAllInBucket(ctx, d.objects.Prefixes()...)
 	}
 }

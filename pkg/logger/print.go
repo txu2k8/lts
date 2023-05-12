@@ -1,8 +1,9 @@
-package cli
+package logger
 
 import (
 	"encoding/json"
 	"fmt"
+	"s3stress/config"
 	"strings"
 	"sync"
 	"unicode"
@@ -12,26 +13,26 @@ import (
 	"github.com/minio/pkg/console"
 )
 
-// causeMessage container for golang error messages
-type causeMessage struct {
+// CauseMessage container for golang error messages
+type CauseMessage struct {
 	Message string `json:"message"`
 	Error   error  `json:"error"`
 }
 
-// errorMessage container for error messages
-type errorMessage struct {
+// ErrorMessage container for error messages
+type ErrorMessage struct {
 	Message   string             `json:"message"`
-	Cause     causeMessage       `json:"cause"`
+	Cause     CauseMessage       `json:"cause"`
 	Type      string             `json:"type"`
 	CallTrace []probe.TracePoint `json:"trace,omitempty"`
 	SysInfo   map[string]string  `json:"sysinfo"`
 }
 
-var printMu sync.Mutex
+var PrintMu sync.Mutex
 
-func printInfo(data ...interface{}) {
-	printMu.Lock()
-	defer printMu.Unlock()
+func PrintInfo(data ...interface{}) {
+	PrintMu.Lock()
+	defer PrintMu.Unlock()
 	w, _ := pb.GetTerminalWidth()
 	if w > 0 {
 		fmt.Print("\r", strings.Repeat(" ", w), "\r")
@@ -41,9 +42,9 @@ func printInfo(data ...interface{}) {
 	console.Info(data...)
 }
 
-func printError(data ...interface{}) {
-	printMu.Lock()
-	defer printMu.Unlock()
+func PrintError(data ...interface{}) {
+	PrintMu.Lock()
+	defer PrintMu.Unlock()
 	w, _ := pb.GetTerminalWidth()
 	if w > 0 {
 		fmt.Print("\r", strings.Repeat(" ", w), "\r")
@@ -53,31 +54,31 @@ func printError(data ...interface{}) {
 	console.Errorln(data...)
 }
 
-// fatalIf wrapper function which takes error and selectively prints stack frames if available on debug
-func fatalIf(err *probe.Error, msg string, data ...interface{}) {
+// FatalIf wrapper function which takes error and selectively prints stack frames if available on debug
+func FatalIf(err *probe.Error, msg string, data ...interface{}) {
 	if err == nil {
 		return
 	}
-	fatal(err, msg, data...)
+	Fatal(err, msg, data...)
 }
 
-func fatal(err *probe.Error, msg string, data ...interface{}) {
-	if globalJSON {
-		errorMsg := errorMessage{
+func Fatal(err *probe.Error, msg string, data ...interface{}) {
+	if config.GlobalJSON {
+		errorMsg := ErrorMessage{
 			Message: msg,
 			Type:    "fatal",
-			Cause: causeMessage{
+			Cause: CauseMessage{
 				Message: err.ToGoError().Error(),
 				Error:   err.ToGoError(),
 			},
 			SysInfo: err.SysInfo,
 		}
-		if globalDebug {
+		if config.GlobalDebug {
 			errorMsg.CallTrace = err.CallTrace
 		}
 		json, e := json.MarshalIndent(struct {
 			Status string       `json:"status"`
-			Error  errorMessage `json:"error"`
+			Error  ErrorMessage `json:"error"`
 		}{
 			Status: "error",
 			Error:  errorMsg,
@@ -91,7 +92,7 @@ func fatal(err *probe.Error, msg string, data ...interface{}) {
 
 	msg = fmt.Sprintf(msg, data...)
 	errmsg := err.String()
-	if !globalDebug {
+	if !config.GlobalDebug {
 		errmsg = err.ToGoError().Error()
 	}
 
@@ -119,27 +120,27 @@ func fatal(err *probe.Error, msg string, data ...interface{}) {
 	console.Fatalln(fmt.Sprintf("%s %s", msg, errmsg))
 }
 
-// errorIf synonymous with fatalIf but doesn't exit on error != nil
-func errorIf(err *probe.Error, msg string, data ...interface{}) {
+// ErrorIf synonymous with fatalIf but doesn't exit on error != nil
+func ErrorIf(err *probe.Error, msg string, data ...interface{}) {
 	if err == nil {
 		return
 	}
-	if globalJSON {
-		errorMsg := errorMessage{
+	if config.GlobalJSON {
+		errorMsg := ErrorMessage{
 			Message: fmt.Sprintf(msg, data...),
 			Type:    "error",
-			Cause: causeMessage{
+			Cause: CauseMessage{
 				Message: err.ToGoError().Error(),
 				Error:   err.ToGoError(),
 			},
 			SysInfo: err.SysInfo,
 		}
-		if globalDebug {
+		if config.GlobalDebug {
 			errorMsg.CallTrace = err.CallTrace
 		}
 		json, e := json.MarshalIndent(struct {
 			Status string       `json:"status"`
-			Error  errorMessage `json:"error"`
+			Error  ErrorMessage `json:"error"`
 		}{
 			Status: "error",
 			Error:  errorMsg,
@@ -151,7 +152,7 @@ func errorIf(err *probe.Error, msg string, data ...interface{}) {
 		return
 	}
 	msg = fmt.Sprintf(msg, data...)
-	if !globalDebug {
+	if !config.GlobalDebug {
 		console.Errorln(fmt.Sprintf("%s %s", msg, err.ToGoError()))
 		return
 	}

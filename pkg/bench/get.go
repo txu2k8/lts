@@ -118,7 +118,7 @@ func (g *Get) Prepare(ctx context.Context) error {
 	}
 
 	// prepare the bench by creating the bucket and pushing some objects
-	if err := g.createEmptyBucket(ctx); err != nil {
+	if err := g.CreateEmptyBucket(ctx); err != nil {
 		return err
 	}
 	if g.Versions > 1 {
@@ -244,7 +244,7 @@ func (g *Get) Start(ctx context.Context, wait chan struct{}) (Operations, error)
 	wg.Add(g.Concurrency)
 	c := g.Collector
 	if g.AutoTermDur > 0 {
-		ctx = c.AutoTerm(ctx, http.MethodGet, g.AutoTermScale, autoTermCheck, autoTermSamples, g.AutoTermDur)
+		ctx = c.AutoTerm(ctx, http.MethodGet, g.AutoTermScale, AutoTermCheck, AutoTermSamples, g.AutoTermDur)
 	}
 
 	// Non-terminating context.
@@ -323,6 +323,6 @@ func (g *Get) Start(ctx context.Context, wait chan struct{}) (Operations, error)
 // Cleanup deletes everything uploaded to the bucket.
 func (g *Get) Cleanup(ctx context.Context) {
 	if !g.ListExisting {
-		g.deleteAllInBucket(ctx, g.objects.Prefixes()...)
+		g.DeleteAllInBucket(ctx, g.objects.Prefixes()...)
 	}
 }

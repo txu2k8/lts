@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"s3stress/config"
 	"s3stress/pkg"
+	"s3stress/pkg/logger"
 	"s3stress/pkg/utils"
 	"sort"
 	"strconv"
@@ -22,18 +24,6 @@ import (
 	completeinstall "github.com/posener/complete/cmd/install"
 )
 
-var (
-	globalQuiet   = false // Quiet flag set via command line
-	globalJSON    = false // Json flag set via command line
-	globalDebug   = false // Debug flag set via command line
-	globalNoColor = false // No Color flag set via command line
-)
-
-const (
-	appName   = "s3stress"
-	appNameUC = "S3STRESS"
-)
-
 // Main starts stress
 func Main(args []string) {
 	// Set system max resources as needed.
@@ -41,7 +31,7 @@ func Main(args []string) {
 
 	if len(args) > 1 {
 		switch args[1] {
-		case appName, filepath.Base(args[0]):
+		case config.AppName, filepath.Base(args[0]):
 			mainComplete()
 			return
 		}
@@ -55,7 +45,7 @@ func Main(args []string) {
 	// Fetch terminal size, if not available, automatically
 	// set globalQuiet to true.
 	if _, e := pb.GetTerminalWidth(); e != nil {
-		globalQuiet = true
+		config.GlobalQuiet = true
 	}
 
 	// Set the warp app name.
@@ -68,6 +58,8 @@ func Main(args []string) {
 }
 
 func init() {
+	logger.InitGlobalLogger()
+
 	a := []cli.Command{
 		// mixedCmd,
 		// getCmd,
@@ -186,7 +178,7 @@ func registerApp(name string, appCmds []cli.Command) *cli.App {
 	}
 
 	app.ExtraInfo = func() map[string]string {
-		if globalDebug {
+		if config.GlobalDebug {
 			return getSystemData()
 		}
 		return make(map[string]string)
@@ -213,14 +205,14 @@ func installAutoCompletion() {
 		return
 	}
 
-	if completeinstall.IsInstalled(filepath.Base(os.Args[0])) || completeinstall.IsInstalled(appName) {
+	if completeinstall.IsInstalled(filepath.Base(os.Args[0])) || completeinstall.IsInstalled(config.AppName) {
 		console.Infoln("autocompletion is already enabled in your '$SHELLRC'")
 		return
 	}
 
 	err := completeinstall.Install(filepath.Base(os.Args[0]))
 	if err != nil {
-		fatalIf(probe.NewError(err), "Unable to install auto-completion.")
+		logger.FatalIf(probe.NewError(err), "Unable to install auto-completion.")
 	} else {
 		console.Infoln("enabled autocompletion in '$SHELLRC'. Please restart your shell.")
 	}
@@ -230,7 +222,7 @@ func installAutoCompletion() {
 // Returns a map of current os/arch/platform/memstats.
 func getSystemData() map[string]string {
 	host, e := os.Hostname()
-	fatalIf(probe.NewError(e), "Unable to determine the hostname.")
+	logger.FatalIf(probe.NewError(e), "Unable to determine the hostname.")
 
 	memstats := &runtime.MemStats{}
 	runtime.ReadMemStats(memstats)
@@ -250,7 +242,7 @@ func getSystemData() map[string]string {
 
 // Function invoked when invalid command is passed.
 func commandNotFound(ctx *cli.Context, command string) {
-	msg := fmt.Sprintf("`%s` is not a %s command. See `m3 --help`.", command, appName)
+	msg := fmt.Sprintf("`%s` is not a %s command. See `m3 --help`.", command, config.AppName)
 	closestCommands := findClosestCommands(command)
 	if len(closestCommands) > 0 {
 		msg += "\n\nDid you mean one of these?\n"
@@ -263,7 +255,7 @@ func commandNotFound(ctx *cli.Context, command string) {
 			}
 		}
 	}
-	fatalIf(errDummy().Trace(), msg)
+	logger.FatalIf(errDummy().Trace(), msg)
 }
 
 // findClosestCommands to match a given string with commands trie tree.
