@@ -16,6 +16,7 @@ import (
 	"s3stress/config"
 	"s3stress/pkg/bench"
 	"s3stress/pkg/logger"
+	"s3stress/pkg/utils"
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/minio/cli"
@@ -117,7 +118,7 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 		}
 		if ctx.IsSet(flag.GetName()) {
 			var err error
-			req.Benchmark.Flags[flag.GetName()], err = flagToJSON(ctx, flag)
+			req.Benchmark.Flags[flag.GetName()], err = utils.FlagToJSON(ctx, flag)
 			if err != nil {
 				return true, err
 			}
@@ -199,13 +200,13 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 			logger.FatalIf(probe.NewError(err), "Unable to compress benchmark output")
 
 			defer enc.Close()
-			err = allOps.CSV(enc, commandLine(ctx))
+			err = allOps.CSV(enc, utils.CommandLine(ctx))
 			logger.FatalIf(probe.NewError(err), "Unable to write benchmark output")
 
 			infoLn(fmt.Sprintf("Benchmark data written to %q\n", fileName+".csv.zst"))
 		}()
 	}
-	monitor.OperationsReady(allOps, fileName, commandLine(ctx))
+	monitor.OperationsReady(allOps, fileName, utils.CommandLine(ctx))
 	printAnalysis(ctx, allOps)
 
 	err = conns.startStageAll(stageCleanup, time.Now(), false)
@@ -506,47 +507,4 @@ func (c *connections) waitForStage(stage benchmarkStage, failOnErr bool, common 
 	}
 	wg.Wait()
 	return nil
-}
-
-// flagToJSON converts a flag to a representation that can be reversed into the flag.
-func flagToJSON(ctx *cli.Context, flag cli.Flag) (string, error) {
-	switch flag.(type) {
-	case cli.StringFlag:
-		if ctx.IsSet(flag.GetName()) {
-			return ctx.String(flag.GetName()), nil
-		}
-	case cli.BoolFlag:
-		if ctx.IsSet(flag.GetName()) {
-			return fmt.Sprint(ctx.Bool(flag.GetName())), nil
-		}
-	case cli.Int64Flag:
-		if ctx.IsSet(flag.GetName()) {
-			return fmt.Sprint(ctx.Int64(flag.GetName())), nil
-		}
-	case cli.IntFlag:
-		if ctx.IsSet(flag.GetName()) {
-			return fmt.Sprint(ctx.Int(flag.GetName())), nil
-		}
-	case cli.DurationFlag:
-		if ctx.IsSet(flag.GetName()) {
-			return ctx.Duration(flag.GetName()).String(), nil
-		}
-	case cli.UintFlag:
-		if ctx.IsSet(flag.GetName()) {
-			return fmt.Sprint(ctx.Uint(flag.GetName())), nil
-		}
-	case cli.Uint64Flag:
-		if ctx.IsSet(flag.GetName()) {
-			return fmt.Sprint(ctx.Uint64(flag.GetName())), nil
-		}
-	case cli.Float64Flag:
-		if ctx.IsSet(flag.GetName()) {
-			return fmt.Sprint(ctx.Float64(flag.GetName())), nil
-		}
-	default:
-		if ctx.IsSet(flag.GetName()) {
-			return "", fmt.Errorf("unhandled flag type: %T", flag)
-		}
-	}
-	return "", nil
 }

@@ -19,9 +19,10 @@ type Workflow interface {
 	Init(ctx context.Context) error
 
 	// Prepare for the workflow run  -- data prepare
+	// Put operations should begin executing when the start channel is closed.
 	Prepare(ctx context.Context) error
 
-	// Start will execute the main workflow.
+	// Start will execute the main workflow.  -- data opt:put/get/delete
 	// Operations should begin executing when the start channel is closed.
 	Start(ctx context.Context, wait chan struct{}) (bench.Operations, error)
 

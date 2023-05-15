@@ -32,6 +32,7 @@ import (
 	"s3stress/pkg/aggregate"
 	"s3stress/pkg/bench"
 	"s3stress/pkg/logger"
+	"s3stress/pkg/utils"
 
 	"github.com/fatih/color"
 	"github.com/klauspost/compress/zstd"
@@ -143,7 +144,7 @@ func mainAnalyze(ctx *cli.Context) error {
 		logger.FatalIf(probe.NewError(err), "Unable to parse input")
 
 		printAnalysis(ctx, ops)
-		monitor.OperationsReady(ops, strings.TrimSuffix(filepath.Base(arg), ".csv.zst"), commandLine(ctx))
+		monitor.OperationsReady(ops, strings.TrimSuffix(filepath.Base(arg), ".csv.zst"), utils.CommandLine(ctx))
 	}
 	return nil
 }

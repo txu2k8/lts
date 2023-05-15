@@ -58,12 +58,11 @@ func Main(args []string) {
 }
 
 func init() {
-	logger.InitGlobalLogger()
-
 	a := []cli.Command{
 		// mixedCmd,
 		// getCmd,
 		putCmd,
+		videoCmd,
 		// deleteCmd,
 		// listCmd,
 		// statCmd,
@@ -185,11 +184,11 @@ func registerApp(name string, appCmds []cli.Command) *cli.App {
 	}
 
 	app.HideHelpCommand = true
-	app.Usage = "Benchmark tool for S3 compatible object storage systems.\n\tFor usage details see https://github.com/minio/warp"
+	app.Usage = "Stress tool for S3 compatible object storage systems.\n\tFor usage details see https://github.com/txu2k8/s3-stress"
 	app.Commands = commands
-	app.Author = "MinIO, Inc."
+	app.Author = "tao.xu@outlook.com."
 	app.Version = pkg.Version + " - " + pkg.ShortCommitID
-	app.Copyright = "(c) 2020 MinIO, Inc."
+	app.Copyright = ""
 	app.Compiled, _ = time.Parse(time.RFC3339, pkg.ReleaseTime)
 	app.Flags = append(app.Flags, profileFlags...)
 	app.Flags = append(app.Flags, globalFlags...)

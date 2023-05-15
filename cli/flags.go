@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"s3stress/client"
 	"s3stress/config"
 
@@ -101,24 +100,6 @@ func setGlobals(quiet, debug, json, noColor bool) {
 	if config.GlobalNoColor || config.GlobalQuiet {
 		console.SetColorOff()
 	}
-}
-
-// commandLine attempts to reconstruct the commandline.
-func commandLine(ctx *cli.Context) string {
-	s := os.Args[0] + " " + ctx.Command.Name
-	for _, flag := range ctx.Command.Flags {
-		val, err := flagToJSON(ctx, flag)
-		if err != nil || val == "" {
-			continue
-		}
-		name := flag.GetName()
-		switch name {
-		case "access-key", "secret-key":
-			val = "*REDACTED*"
-		}
-		s += " --" + flag.GetName() + "=" + val
-	}
-	return s
 }
 
 // Flags common across all I/O commands such as cp, mirror, stat, pipe etc.

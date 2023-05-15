@@ -26,7 +26,7 @@ var putFlags = []cli.Flag{
 // Put command.
 var putCmd = cli.Command{
 	Name:   "put",
-	Usage:  "benchmark put objects",
+	Usage:  "stress put objects",
 	Action: mainPut,
 	Before: setGlobalsFromContext,
 	Flags:  combineFlags(aliasFlags, ioFlags, putFlags, genFlags, benchFlags, analyzeFlags, globalFlags),

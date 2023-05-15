@@ -1,4 +1,4 @@
-package cli
+package workflow
 
 import (
 	"context"
@@ -27,73 +27,22 @@ import (
 	"github.com/minio/pkg/console"
 )
 
-var benchFlags = []cli.Flag{
-	cli.StringFlag{
-		Name:  "benchdata",
-		Value: "",
-		Usage: "benchFlag: Output benchmark+profile data to this file. By default unique filename is generated.",
-	},
-	cli.StringFlag{
-		Name:  "serverprof",
-		Usage: "benchFlag: Run MinIO server profiling during benchmark; possible values are 'cpu', 'mem', 'block', 'mutex' and 'trace'.",
-		Value: "",
-	},
-	cli.DurationFlag{
-		Name:  "duration",
-		Usage: "benchFlag: Duration to run the benchmark. Use 's' and 'm' to specify seconds and minutes.",
-		Value: 5 * time.Minute,
-	},
-	cli.BoolFlag{
-		Name:  "autoterm",
-		Usage: "benchFlag: Auto terminate when benchmark is considered stable.",
-	},
-	cli.DurationFlag{
-		Name:  "autoterm.dur",
-		Usage: "benchFlag: Minimum duration where output must have been stable to allow automatic termination.",
-		Value: 10 * time.Second,
-	},
-	cli.Float64Flag{
-		Name:  "autoterm.pct",
-		Usage: "benchFlag: The percentage the last 6/25 time blocks must be within current speed to auto terminate.",
-		Value: 7.5,
-	},
-	cli.BoolFlag{
-		Name:  "noclear",
-		Usage: "benchFlag: Do not clear bucket before or after running benchmarks. Use when running multiple clients.",
-	},
-	cli.BoolFlag{
-		Name:   "keep-data",
-		Usage:  "benchFlag: Leave benchmark data. Do not run cleanup after benchmark. Bucket will still be cleaned prior to benchmark",
-		Hidden: true,
-	},
-	cli.StringFlag{
-		Name:  "syncstart",
-		Usage: "benchFlag: Specify a benchmark start time. Time format is 'hh:mm' where hours are specified in 24h format, server TZ.",
-		Value: "",
-	},
-	cli.StringFlag{
-		Name:   "warp-client",
-		Usage:  "benchFlag: Connect to warp clients and run benchmarks there.",
-		EnvVar: "",
-		Value:  "",
-	},
-}
-
-// runBench will run the supplied benchmark and save/print the analysis.
-func runBench(ctx *cli.Context, b bench.Benchmark) error {
+// RunWorkflow will run the supplied benchmark and save/print the analysis.
+func RunWorkflow(ctx *cli.Context, b Workflow) error {
 	activeBenchmarkMu.Lock()
-	ab := activeBenchmark
+	// ab := activeBenchmark
 	activeBenchmarkMu.Unlock()
 	b.GetCommon().Error = logger.PrintError
-	if ab != nil {
-		b.GetCommon().ClientIdx = ab.clientIdx
-		return runClientBenchmark(ctx, b, ab)
-	}
-	if done, err := runServerBenchmark(ctx, b); done || err != nil {
-		logger.FatalIf(probe.NewError(err), "Error running remote benchmark")
-		return nil
-	}
+	// if ab != nil {
+	// 	b.GetCommon().ClientIdx = ab.clientIdx
+	// 	return runClientBenchmark(ctx, b, ab)
+	// }
+	// if done, err := runServerBenchmark(ctx, b); done || err != nil {
+	// 	logger.FatalIf(probe.NewError(err), "Error running remote benchmark")
+	// 	return nil
+	// }
 
+	serverFlagName := "serve"
 	monitor := api.NewBenchmarkMonitor(ctx.String(serverFlagName))
 	monitor.SetLnLoggers(logger.PrintInfo, logger.PrintError)
 	defer monitor.Done()
@@ -156,10 +105,10 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 		<-pgDone
 	}
 
-	if ap, ok := b.(AfterPreparer); ok {
-		err := ap.AfterPrepare(context.Background())
-		logger.FatalIf(probe.NewError(err), "Error preparing server")
-	}
+	// if ap, ok := b.(AfterPreparer); ok {
+	// 	err := ap.AfterPrepare(context.Background())
+	// 	logger.FatalIf(probe.NewError(err), "Error preparing server")
+	// }
 
 	// Start after waiting a second or until we reached the start time.
 	tStart := time.Now().Add(time.Second * 3)
@@ -251,7 +200,7 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 		}()
 	}
 	monitor.OperationsReady(ops, fileName, utils.CommandLine(ctx))
-	printAnalysis(ctx, ops)
+	// printAnalysis(ctx, ops)
 	if !ctx.Bool("keep-data") && !ctx.Bool("noclear") {
 		monitor.InfoLn("Starting cleanup...")
 		b.Cleanup(context.Background())
@@ -514,22 +463,22 @@ func checkBenchmark(ctx *cli.Context) {
 			}
 		}
 		if !supportedProfiler {
-			logger.FatalIf(errDummy(), "Profiler type %s unrecognized. Possible values are: %v.", profilerType, profilerTypes)
+			// logger.FatalIf(errDummy(), "Profiler type %s unrecognized. Possible values are: %v.", profilerType, profilerTypes)
 		}
 	}
 	if st := ctx.String("syncstart"); st != "" {
 		t := parseLocalTime(st)
 		if t.Before(time.Now()) {
-			logger.FatalIf(errDummy(), "syncstart is in the past: %v", t)
+			// logger.FatalIf(errDummy(), "syncstart is in the past: %v", t)
 		}
 	}
 	if ctx.Bool("autoterm") {
 		// TODO: autoterm cannot be used when in client/server mode
 		if ctx.Duration("autoterm.dur") <= 0 {
-			logger.FatalIf(errDummy(), "autoterm.dur cannot be zero or negative")
+			// logger.FatalIf(errDummy(), "autoterm.dur cannot be zero or negative")
 		}
 		if ctx.Float64("autoterm.pct") <= 0 {
-			logger.FatalIf(errDummy(), "autoterm.pct cannot be zero or negative")
+			// logger.FatalIf(errDummy(), "autoterm.pct cannot be zero or negative")
 		}
 	}
 }

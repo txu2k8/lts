@@ -5,19 +5,33 @@ import (
 	"fmt"
 	"net/http"
 	"s3stress/pkg/bench"
+	"s3stress/pkg/workflow"
 	"sync"
 	"time"
 )
 
 // Put benchmarks upload speed.
 type VideoWorkflow struct {
-	bench.Common
+	workflow.Common
+	VideoInfo
 	prefixes map[string]struct{}
+}
+
+// Init will create empty buckets
+func (u *VideoWorkflow) Init(ctx context.Context) error {
+	// 输入参数计算分析
+	u.CalcData()
+
+	fmt.Printf("Stage-Init:Create empty buckets: %s%d~%d", u.BucketPrefix, 0, u.BucketNum)
+	return nil // u.CreateEmptyBucket(ctx)
 }
 
 // Prepare will create an empty bucket ot delete any content already there.
 func (u *VideoWorkflow) Prepare(ctx context.Context) error {
-	return u.CreateEmptyBucket(ctx)
+	u.CalcData()
+
+	fmt.Printf("Stage-Init:Create empty buckets: %s%d~%d", u.BucketPrefix, 0, u.BucketNum)
+	return nil
 }
 
 // Start will execute the main workflow.
