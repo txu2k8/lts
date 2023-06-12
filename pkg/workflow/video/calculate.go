@@ -8,7 +8,7 @@ func (v *VideoInfo) printVideoInfo() bool {
 
 // 视频监控场景 - 数据模型计算
 func (v *VideoInfo) CalcData() *VideoInfo {
-	v.SafeWaterCapacity = int(float32(v.TotalCapacity) * v.SafeWaterLevel)
+	v.SafeWaterCapacity = uint64(float32(v.TotalCapacity) * v.SafeWaterLevel)
 	if v.PrepareChannelNum < v.ChannelNum {
 		v.PrepareChannelNum = v.ChannelNum
 	}
@@ -17,12 +17,12 @@ func (v *VideoInfo) CalcData() *VideoInfo {
 	v.BandWidth = (v.BitStream / 8) * v.ChannelNum
 
 	// 对象数 = 安全水位容量 / 对象大小
-	v.ObjNum = v.SafeWaterCapacity / v.ObjSize
+	v.ObjNum = int(v.SafeWaterCapacity / uint64(1)) // TODO
 
 	// 每天数据量 = 带宽 * 1天
 	var sizePD = v.BandWidth * 60 * 60 * 24
 	if v.DataLife == 0 {
-		v.DataLife = float32(v.SafeWaterCapacity / sizePD)
+		v.DataLife = float32(v.SafeWaterCapacity / uint64(sizePD))
 	}
 
 	// 每天一路视频需要写入的数据量

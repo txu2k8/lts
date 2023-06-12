@@ -2,8 +2,9 @@ package cli
 
 import (
 	"fmt"
-	"stress/client"
 	"stress/config"
+
+	s3client "stress/client/s3"
 
 	"github.com/minio/cli"
 	"github.com/minio/pkg/console"
@@ -141,8 +142,8 @@ var aliasFlags = []cli.Flag{
 	},
 	cli.StringFlag{
 		Name:  "host-select",
-		Value: string(client.HostSelectTypeWeighed),
-		Usage: fmt.Sprintf("aliasFlag: Host selection algorithm. Can be %q or %q", client.HostSelectTypeWeighed, client.HostSelectTypeRoundrobin),
+		Value: string(s3client.HostSelectTypeWeighed),
+		Usage: fmt.Sprintf("aliasFlag: Host selection algorithm. Can be %q or %q", s3client.HostSelectTypeWeighed, s3client.HostSelectTypeRoundrobin),
 	},
 	cli.BoolFlag{
 		Name:   "resolve-host",

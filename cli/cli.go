@@ -65,7 +65,7 @@ func init() {
 		// mixedCmd,
 		// getCmd,
 		putCmd,
-		videoCmd,
+		videoS3Cmd,
 		// deleteCmd,
 		// listCmd,
 		// statCmd,

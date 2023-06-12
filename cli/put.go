@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"stress/client"
+	s3client "stress/client/s3"
 	"stress/pkg/bench"
 
 	"github.com/minio/cli"
@@ -48,7 +48,7 @@ func mainPut(ctx *cli.Context) error {
 	src := newGenSource(ctx, "obj.size")
 	b := bench.Put{
 		Common: bench.Common{
-			Client:      client.NewClient(ctx),
+			Client:      s3client.NewClient(ctx),
 			Concurrency: ctx.Int("concurrent"),
 			Source:      src,
 			Bucket:      ctx.String("bucket"),

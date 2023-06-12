@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"stress/api"
-	"stress/client"
+	client "stress/client/s3"
 	"stress/config"
 	"stress/pkg/bench"
 	"stress/pkg/logger"

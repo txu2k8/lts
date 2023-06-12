@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"stress/api"
-	"stress/client"
+	s3client "stress/client/s3"
 	"stress/config"
 	"stress/pkg/bench"
 	"stress/pkg/logger"
@@ -80,7 +80,7 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 		return false, nil
 	}
 
-	conns := newConnections(client.ParseHosts(ctx.String("warp-client"), false))
+	conns := newConnections(s3client.ParseHosts(ctx.String("warp-client"), false))
 	if len(conns.hosts) == 0 {
 		return true, errors.New("no hosts")
 	}
