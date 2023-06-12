@@ -3,7 +3,7 @@ package logger
 import (
 	"encoding/json"
 	"fmt"
-	"s3stress/config"
+	"stress/config"
 	"strings"
 	"sync"
 	"unicode"

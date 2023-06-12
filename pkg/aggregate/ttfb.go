@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	"s3stress/pkg/bench"
+	"stress/pkg/bench"
 )
 
 // TTFB contains times to first byte if applicable.

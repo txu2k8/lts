@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	"s3stress/pkg/bench"
+	"stress/pkg/bench"
 )
 
 // SingleSizedRequests contains statistics when all objects have the same size.

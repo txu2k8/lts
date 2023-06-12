@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"s3stress/pkg/aggregate"
-	"s3stress/pkg/bench"
+	"stress/pkg/aggregate"
+	"stress/pkg/bench"
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/minio/pkg/console"

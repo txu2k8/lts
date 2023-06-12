@@ -1,4 +1,4 @@
-module s3stress
+module stress
 
 go 1.18
 
@@ -8,6 +8,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fatih/color v1.15.0
 	github.com/klauspost/compress v1.16.4
+	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/minio/cli v1.24.2
 	github.com/minio/madmin-go/v2 v2.0.19
 	github.com/minio/mc v0.0.0-20230508063422-af0e24188374
@@ -20,6 +21,7 @@ require (
 	github.com/secure-io/sio-go v0.3.1
 	go.uber.org/zap v1.24.0
 	golang.org/x/net v0.9.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (
@@ -30,6 +32,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/jonboulle/clockwork v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -39,6 +42,7 @@ require (
 	github.com/lestrrat-go/iter v1.0.2 // indirect
 	github.com/lestrrat-go/jwx v1.2.25 // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
+	github.com/lestrrat-go/strftime v1.0.6 // indirect
 	github.com/lufia/plan9stats v0.0.0-20230326075908-cb1d2100619a // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.18 // indirect

@@ -2,7 +2,7 @@ package cli
 
 import (
 	"errors"
-	"s3stress/config"
+	"stress/config"
 
 	"github.com/minio/mc/pkg/probe"
 )

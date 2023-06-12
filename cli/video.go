@@ -1,9 +1,9 @@
 package cli
 
 import (
-	"s3stress/client"
-	"s3stress/pkg/workflow"
-	"s3stress/pkg/workflow/video"
+	"stress/client"
+	"stress/pkg/workflow"
+	"stress/pkg/workflow/video"
 
 	"github.com/minio/cli"
 	"github.com/minio/minio-go/v7"
@@ -78,7 +78,7 @@ var videoCmd = cli.Command{
 
 USAGE:
   {{.HelpName}} [FLAGS]
-  -> see https://github.com/txu2k8/s3stress#video
+  -> see https://github.com/txu2k8/stress#video
 
 FLAGS:
   {{range .VisibleFlags}}{{.}}

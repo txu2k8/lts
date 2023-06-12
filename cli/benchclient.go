@@ -26,8 +26,8 @@ import (
 	"sync"
 	"time"
 
-	"s3stress/config"
-	"s3stress/pkg/bench"
+	"stress/config"
+	"stress/pkg/bench"
 
 	"github.com/minio/cli"
 	"github.com/minio/pkg/console"

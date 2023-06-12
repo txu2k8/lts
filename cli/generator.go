@@ -20,7 +20,7 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"s3stress/pkg/logger"
+	"stress/pkg/logger"
 	"strings"
 
 	"github.com/dustin/go-humanize"

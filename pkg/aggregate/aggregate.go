@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"s3stress/pkg/bench"
+	"stress/pkg/bench"
 )
 
 // Aggregated contains aggregated data for a single benchmark run.

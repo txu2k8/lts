@@ -2,8 +2,8 @@ package cli
 
 import (
 	"fmt"
-	"s3stress/client"
-	"s3stress/config"
+	"stress/client"
+	"stress/config"
 
 	"github.com/minio/cli"
 	"github.com/minio/pkg/console"

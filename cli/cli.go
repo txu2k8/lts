@@ -6,12 +6,12 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"s3stress/config"
-	"s3stress/pkg"
-	"s3stress/pkg/logger"
-	"s3stress/pkg/utils"
 	"sort"
 	"strconv"
+	"stress/config"
+	"stress/pkg"
+	"stress/pkg/logger"
+	"stress/pkg/utils"
 	"time"
 
 	mprofile "github.com/bygui86/multi-profile/v2"
@@ -26,6 +26,9 @@ import (
 
 // Main starts stress
 func Main(args []string) {
+	// 初始化zap logger
+	logger.InitLogger("./log/test.log", "text", "debug", true)
+
 	// Set system max resources as needed.
 	utils.SetMaxResources()
 

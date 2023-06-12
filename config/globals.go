@@ -1,8 +1,8 @@
 package config
 
 const (
-	AppName   = "s3stress"
-	AppNameUC = "S3STRESS"
+	AppName   = "stress"
+	AppNameUC = "stress"
 )
 
 var (

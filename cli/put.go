@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"s3stress/client"
-	"s3stress/pkg/bench"
+	"stress/client"
+	"stress/pkg/bench"
 
 	"github.com/minio/cli"
 	"github.com/minio/minio-go/v7"

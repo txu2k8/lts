@@ -19,8 +19,8 @@ package cli
 
 import (
 	"net/http"
-	"s3stress/pkg/logger"
 	"strconv"
+	"stress/pkg/logger"
 	"strings"
 
 	"github.com/minio/cli"

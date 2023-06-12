@@ -2,7 +2,7 @@ package main
 
 import (
 	"os"
-	"s3stress/cli"
+	"stress/cli"
 )
 
 func main() {

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"s3stress/pkg/bench"
-	"s3stress/pkg/generator"
+	"stress/pkg/bench"
+	"stress/pkg/generator"
 	"strings"
 	"time"
 

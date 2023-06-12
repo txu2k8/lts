@@ -27,12 +27,12 @@ import (
 	"strings"
 	"time"
 
-	"s3stress/api"
-	"s3stress/config"
-	"s3stress/pkg/aggregate"
-	"s3stress/pkg/bench"
-	"s3stress/pkg/logger"
-	"s3stress/pkg/utils"
+	"stress/api"
+	"stress/config"
+	"stress/pkg/aggregate"
+	"stress/pkg/bench"
+	"stress/pkg/logger"
+	"stress/pkg/utils"
 
 	"github.com/fatih/color"
 	"github.com/klauspost/compress/zstd"

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"s3stress/pkg/bench"
-	"s3stress/pkg/workflow"
+	"stress/pkg/bench"
+	"stress/pkg/workflow"
 	"sync"
 	"time"
 )

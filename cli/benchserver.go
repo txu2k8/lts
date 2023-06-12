@@ -11,12 +11,12 @@ import (
 	"sync"
 	"time"
 
-	"s3stress/api"
-	"s3stress/client"
-	"s3stress/config"
-	"s3stress/pkg/bench"
-	"s3stress/pkg/logger"
-	"s3stress/pkg/utils"
+	"stress/api"
+	"stress/client"
+	"stress/config"
+	"stress/pkg/bench"
+	"stress/pkg/logger"
+	"stress/pkg/utils"
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/minio/cli"

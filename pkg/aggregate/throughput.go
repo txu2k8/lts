@@ -22,7 +22,7 @@ import (
 	"math"
 	"time"
 
-	"s3stress/pkg/bench"
+	"stress/pkg/bench"
 )
 
 // Throughput contains throughput.
