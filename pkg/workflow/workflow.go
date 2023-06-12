@@ -15,10 +15,7 @@ import (
 )
 
 type Workflow interface {
-	// Init for the workflow run -- new bucket
-	Init(ctx context.Context) error
-
-	// Prepare for the workflow run  -- data prepare
+	// Prepare for the workflow run  -- new bucket
 	// Put operations should begin executing when the start channel is closed.
 	Prepare(ctx context.Context) error
 
