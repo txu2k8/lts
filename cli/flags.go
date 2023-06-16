@@ -128,6 +128,11 @@ var aliasFlags = []cli.Flag{
 		Usage:  "aliasFlag: Use TLS (HTTPS) for transport",
 		EnvVar: config.AppNameUC + "_TLS",
 	},
+	cli.BoolFlag{
+		Name:   "alias",
+		Usage:  "aliasFlag: alias名称",
+		EnvVar: config.AppNameUC + "_ALIAS",
+	},
 	cli.StringFlag{
 		Name:   "region",
 		Usage:  "aliasFlag: Specify a custom region",
@@ -141,9 +146,10 @@ var aliasFlags = []cli.Flag{
 		Hidden: true,
 	},
 	cli.StringFlag{
-		Name:  "host-select",
-		Value: string(s3client.HostSelectTypeWeighed),
-		Usage: fmt.Sprintf("aliasFlag: Host selection algorithm. Can be %q or %q", s3client.HostSelectTypeWeighed, s3client.HostSelectTypeRoundrobin),
+		Name:   "host-select",
+		Value:  string(s3client.HostSelectTypeWeighed),
+		Usage:  fmt.Sprintf("aliasFlag: Host selection algorithm. Can be %q or %q", s3client.HostSelectTypeWeighed, s3client.HostSelectTypeRoundrobin),
+		Hidden: true,
 	},
 	cli.BoolFlag{
 		Name:   "resolve-host",

@@ -111,10 +111,7 @@ func (u *VideoWorkflow) StageMain() {
 
 // Prepare will create an empty buckets ot delete any content already there.
 func (u *VideoWorkflow) Prepare(ctx context.Context) error {
-	// 输入参数计算分析
-	u.CalcData()
-
-	fmt.Printf("Stage-Init:Create empty buckets: %s%d~%d", u.BucketPrefix, 0, u.BucketNum)
+	fmt.Printf("Stage-Prepare:Create empty buckets: %s%d~%d", u.BucketPrefix, 0, u.BucketNum)
 	return nil // u.CreateEmptyBucket(ctx)
 }
 

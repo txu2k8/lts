@@ -62,10 +62,10 @@ func Main(args []string) {
 
 func init() {
 	a := []cli.Command{
+		videoS3Cmd,
 		// mixedCmd,
 		// getCmd,
-		putCmd,
-		videoS3Cmd,
+		// putCmd,
 		// deleteCmd,
 		// listCmd,
 		// statCmd,
