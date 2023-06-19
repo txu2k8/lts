@@ -29,9 +29,10 @@ type VideoBaseInfo struct {
 	SafeWaterLevel    float32 `json:"SafeWaterLevel"`    // 安全水位，即数据写入存储池的数据量最大不超过总容量的百分比，例如 90%=0.9
 	SafeWaterCapacity uint64  `json:"SafeWaterCapacity"` // 安全水位存储池容量大小，单位 byte; SafeWaterCapacity=TotalCapacity*SafeWaterLevel
 
-	Appendable       bool `json:"追加写模式"` // 追加写模式
-	DisableMultipart bool `json:"非多段上传"` // 非多段上传，与追加写互斥
-	SingleBucket     bool `json:"单桶模式"`  // 单桶模式，即所有数据存储在同一个桶中的不同路径
+	Appendable       bool `json:"追加写模式"`  // 追加写模式
+	DisableMultipart bool `json:"非多段上传"`  // 非多段上传，与追加写互斥
+	SingleBucket     bool `json:"单桶模式"`   // 单桶模式，即所有数据存储在同一个桶中的不同路径
+	SingleBucketName bool `json:"单桶模式桶名"` // 单桶模式，即所有数据存储在同一个桶中的不同路径
 
 	// 仅用于打印
 	FileInfoHuman          string `json:"源文件信息"`   // 源文件信息

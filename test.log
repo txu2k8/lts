@@ -2499,3 +2499,68 @@
 2023-06-16T10:29:23.426Z	INFO	logger/zaplogger.go:125	对象前缀                          	: 
 2023-06-16T10:29:23.426Z	INFO	logger/zaplogger.go:125	对象名序号长度                       	: 0
 2023-06-16T10:29:23.426Z	INFO	logger/zaplogger.go:125	对象序号起始值                       	: 0
+2023-06-19T00:46:02.134Z	INFO	logger/zaplogger.go:125	计算分析数据模型/参数...
+2023-06-19T00:46:02.152Z	DEBUG	logger/zaplogger.go:120	/root/upload/128MB.txt
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	============================== 原始需求信息 ==============================
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	视频路数                          	: 1000
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	视频码流(Mbps)                    	: 4
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	追加分片数                         	: 1
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	追加写模式                         	: false
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	非多段上传                         	: false
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	单桶模式                          	: false
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	源文件信息                         	: Path=/root/upload/128MB.txt; Size=128 MiB
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	保留期限(天)                       	: 3.542
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	总容量                           	: 160 TiB
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	安全水位                          	: 91.2 %
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	安全容量                          	: 146 TiB
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	============================== 数据模型信息 ==============================
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	总带宽(MiB/s)                    	: 500
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	桶数量                           	: 0
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	总对象数                          	: 1195376
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	每路视频对象数                       	: 0
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	每天对象数                         	: 0
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	每路视频每天对象数                     	: 0
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	一个对象产生时间                      	: 0
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	一个分片产生时间                      	: 0
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	一路视频最大并行数                     	: 0
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	写删阶段每秒并行数                     	: 0
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	预埋阶段每秒并行数                     	: 0
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	============================== 自定义变量信息 ==============================
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	预埋阶段视频路数                      	: 1000
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	桶前缀                           	: 
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	对象前缀                          	: 
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	对象名序号长度                       	: 0
+2023-06-19T00:46:02.818Z	INFO	logger/zaplogger.go:125	对象序号起始值                       	: 0
+2023-06-19T11:57:08.623Z	INFO	logger/zaplogger.go:125	计算分析数据模型/参数...
+2023-06-19T11:57:08.623Z	DEBUG	logger/zaplogger.go:120	/root/upload/128MB.txt
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	============================== 原始需求信息 ==============================
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	视频路数                          	: 1000
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	视频码流(Mbps)                    	: 4
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	追加分片数                         	: 1
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	追加写模式                         	: false
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	非多段上传                         	: false
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	单桶模式                          	: false
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	单桶模式桶名                        	: false
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	源文件信息                         	: Path=/root/upload/128MB.txt; Size=128 MiB
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	保留期限(天)                       	: 3.542
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	总容量                           	: 160 TiB
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	安全水位                          	: 91.2 %
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	安全容量                          	: 146 TiB
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	============================== 数据模型信息 ==============================
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	总带宽(MiB/s)                    	: 500
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	桶数量                           	: 0
+2023-06-19T11:57:09.024Z	INFO	logger/zaplogger.go:125	总对象数                          	: 1195376
+2023-06-19T11:57:09.025Z	INFO	logger/zaplogger.go:125	每路视频对象数                       	: 0
+2023-06-19T11:57:09.025Z	INFO	logger/zaplogger.go:125	每天对象数                         	: 0
+2023-06-19T11:57:09.025Z	INFO	logger/zaplogger.go:125	每路视频每天对象数                     	: 0
+2023-06-19T11:57:09.025Z	INFO	logger/zaplogger.go:125	一个对象产生时间                      	: 0
+2023-06-19T11:57:09.025Z	INFO	logger/zaplogger.go:125	一个分片产生时间                      	: 0
+2023-06-19T11:57:09.025Z	INFO	logger/zaplogger.go:125	一路视频最大并行数                     	: 0
+2023-06-19T11:57:09.025Z	INFO	logger/zaplogger.go:125	写删阶段每秒并行数                     	: 0
+2023-06-19T11:57:09.025Z	INFO	logger/zaplogger.go:125	预埋阶段每秒并行数                     	: 0
+2023-06-19T11:57:09.025Z	INFO	logger/zaplogger.go:125	============================== 自定义变量信息 ==============================
+2023-06-19T11:57:09.026Z	INFO	logger/zaplogger.go:125	预埋阶段视频路数                      	: 1000
+2023-06-19T11:57:09.026Z	INFO	logger/zaplogger.go:125	桶前缀                           	: 
+2023-06-19T11:57:09.026Z	INFO	logger/zaplogger.go:125	对象前缀                          	: 
+2023-06-19T11:57:09.026Z	INFO	logger/zaplogger.go:125	对象名序号长度                       	: 0
+2023-06-19T11:57:09.026Z	INFO	logger/zaplogger.go:125	对象序号起始值                       	: 0

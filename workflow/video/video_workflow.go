@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"stress/pkg/bench"
 	"stress/pkg/utils"
-	"stress/pkg/workflow"
+	"stress/workflow"
 	"sync"
 	"time"
 )
@@ -61,7 +61,7 @@ func (u *VideoWorkflow) Calc_obj_path(idx int) string {
 	dateStep := idx / u.ObjNumPCPD
 	datePrefix := u.calc_date_string(dateString, dateStep) + "/"
 	filePrefix := u.calc_obj_prefix(u.ObjPrefix, u.Depth, datePrefix)
-	filePath := filePrefix + utils.Zfill(string(idx), u.ObjIdxWidth) // + file_type
+	filePath := filePrefix + utils.Zfill(fmt.Sprint(idx), u.ObjIdxWidth) // + file_type
 	if u.SingleRoot {
 		filePath = fmt.Sprintf("%s/%s", u.ChannelName, filePath)
 	}

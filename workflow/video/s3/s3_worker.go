@@ -3,7 +3,7 @@ package s3worker
 import (
 	"context"
 	"errors"
-	"stress/pkg/workflow/video"
+	"stress/workflow/video"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/pkg/console"

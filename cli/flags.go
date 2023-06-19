@@ -107,53 +107,53 @@ func setGlobals(quiet, debug, json, noColor bool) {
 var aliasFlags = []cli.Flag{
 	cli.StringFlag{
 		Name:   "endpoint",
-		Usage:  "aliasFlag: endpoint. Multiple endpoints can be specified as a comma separated list.",
+		Usage:  "Storage: endpoint. Multiple endpoints can be specified as a comma separated list.",
 		EnvVar: config.AppNameUC + "_ENDPOINT",
 		Value:  "127.0.0.1:6600",
 	},
 	cli.StringFlag{
 		Name:   "access-key",
-		Usage:  "aliasFlag: Specify access key",
+		Usage:  "Storage: Specify access key",
 		EnvVar: config.AppNameUC + "_ACCESS_KEY",
 		Value:  "",
 	},
 	cli.StringFlag{
 		Name:   "secret-key",
-		Usage:  "aliasFlag: Specify secret key",
+		Usage:  "Storage: Specify secret key",
 		EnvVar: config.AppNameUC + "_SECRET_KEY",
 		Value:  "",
 	},
 	cli.BoolFlag{
 		Name:   "tls",
-		Usage:  "aliasFlag: Use TLS (HTTPS) for transport",
+		Usage:  "Storage: Use TLS (HTTPS) for transport",
 		EnvVar: config.AppNameUC + "_TLS",
 	},
 	cli.BoolFlag{
 		Name:   "alias",
-		Usage:  "aliasFlag: alias名称",
+		Usage:  "Storage: alias名称",
 		EnvVar: config.AppNameUC + "_ALIAS",
 	},
 	cli.StringFlag{
 		Name:   "region",
-		Usage:  "aliasFlag: Specify a custom region",
+		Usage:  "Storage: Specify a custom region",
 		EnvVar: config.AppNameUC + "_REGION",
 		Hidden: true,
 	},
 	cli.StringFlag{
 		Name:   "signature",
-		Usage:  "aliasFlag: Specify a signature method. Available values are S3V2, S3V4",
+		Usage:  "Storage: Specify a signature method. Available values are S3V2, S3V4",
 		Value:  "S3V4",
 		Hidden: true,
 	},
 	cli.StringFlag{
 		Name:   "host-select",
 		Value:  string(s3client.HostSelectTypeWeighed),
-		Usage:  fmt.Sprintf("aliasFlag: Host selection algorithm. Can be %q or %q", s3client.HostSelectTypeWeighed, s3client.HostSelectTypeRoundrobin),
+		Usage:  fmt.Sprintf("Storage: Host selection algorithm. Can be %q or %q", s3client.HostSelectTypeWeighed, s3client.HostSelectTypeRoundrobin),
 		Hidden: true,
 	},
 	cli.BoolFlag{
 		Name:   "resolve-host",
-		Usage:  "aliasFlag: Resolve the host(s) ip(s) (including multiple A/AAAA records). This can break SSL certificates, use --insecure if so",
+		Usage:  "Storage: Resolve the host(s) ip(s) (including multiple A/AAAA records). This can break SSL certificates, use --insecure if so",
 		Hidden: true,
 	},
 }
