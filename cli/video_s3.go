@@ -1,11 +1,14 @@
 package cli
 
 import (
+	"os"
 	s3client "stress/client/s3"
 	"stress/models"
-	"stress/pkg/logger"
+	. "stress/pkg/logger"
 	"stress/workflow"
 	"stress/workflow/video"
+	s3worker "stress/workflow/video/s3"
+	"strings"
 
 	"github.com/dustin/go-humanize"
 	"github.com/minio/cli"
@@ -78,17 +81,22 @@ var videoBaseFlags = []cli.Flag{
 		Value: 1,
 		Usage: "业务模型 - 数据预埋节点模拟视频路数（增大以加快预埋速度）.",
 	},
+	cli.StringFlag{
+		Name:  "obj.size",
+		Value: "10MiB",
+		Usage: "putFlag: Size of each generated object. Can be a number or 10KiB/MiB/GiB. All sizes are base 2 binary.",
+	},
 }
 
 var videoCustomFlags = []cli.Flag{
 	cli.StringFlag{
 		Name:  "bucket-prefix",
-		Value: "",
+		Value: "bucket",
 		Usage: "自定义 - 桶前缀.",
 	},
 	cli.StringFlag{
 		Name:  "obj-prefix",
-		Value: "",
+		Value: "data",
 		Usage: "自定义 - 对象前缀.",
 	},
 	cli.IntFlag{
@@ -140,7 +148,7 @@ var videoS3Cmd = cli.Command{
 	Usage:  "video scene test: S3",
 	Action: mainVideo,
 	Before: setGlobalsFromContext,
-	Flags:  combineFlags(aliasFlags, videoBaseFlags, videoCustomFlags, globalFlags),
+	Flags:  combineFlags(aliasFlags, videoBaseFlags, videoCustomFlags, genFlags, globalFlags),
 	CustomHelpTemplate: `NAME:
   {{.HelpName}} - {{.Usage}}
 
@@ -156,8 +164,20 @@ FLAGS:
 // mainVideo is the entry point for cp command.
 func mainVideo(ctx *cli.Context) error {
 	// 初始化zap logger
-	logger.InitLogger("video_s3", "text", "debug", true)
+	logLevel := "info"
+	logFmt := "text"
+	if ctx.Bool("debug") {
+		logLevel = "debug"
+	}
+	if ctx.Bool("json") {
+		logFmt = "json"
+	}
+	InitLogger("video_s3", logFmt, logLevel, ctx.Bool("verbose"))
+
+	// 检查参数
 	checkVideoSyntax(ctx)
+
+	// 初始化参数
 	capacity, _ := humanize.ParseBytes(ctx.String("capacity"))
 	videoInfo := video.VideoInfo{
 		VideoBaseInfo: video.VideoBaseInfo{
@@ -176,16 +196,34 @@ func mainVideo(ctx *cli.Context) error {
 			SingleBucket:     ctx.Bool("single-root"),
 			SingleBucketName: ctx.Bool("single-root.name"),
 		},
+		VideoDataInfo: video.VideoDataInfo{
+			MaxWorkers: ctx.Int("max-workers"),
+		},
+		VideoCustomizeInfo: video.VideoCustomizeInfo{
+			BucketPrefix: ctx.String("bucket-prefix"),
+			ObjPrefix:    ctx.String("obj-prefix"),
+			ObjIdxStart:  ctx.Int("idx-start"),
+			ObjIdxWidth:  ctx.Int("idx-width"),
+		},
 	}
+
+	// 计算数据模型
 	videoInfo.CalcData()
-	// src := newGenSource(ctx, "obj.size")
-	b := video.VideoWorkflow{
+
+	// 初始化 Workflow
+	// Logger.Debug(strings.Replace(videoInfo.FileInfo.SizeHuman, " ", "", -1))
+	src := newGenSource(ctx, "obj.size")
+	b := s3worker.VideoS3Workflow{
 		Common: workflow.Common{
 			S3Client:    s3client.NewClient(ctx),
 			Concurrency: ctx.Int("concurrent"),
+			Source:      src,
 			PutOpts:     videoPutOpts(ctx),
+			Bucket:      "test",
 		},
-		VideoInfo: videoInfo,
+		VideoWorkflow: video.VideoWorkflow{
+			VideoInfo: videoInfo,
+		},
 	}
 	return workflow.RunWorkflow(ctx, &b)
 }
@@ -205,4 +243,5 @@ func checkVideoSyntax(ctx *cli.Context) {
 	if ctx.NArg() > 0 {
 		console.Fatal("Command takes no arguments")
 	}
+	Logger.Info(strings.Join(os.Args, " "))
 }

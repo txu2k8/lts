@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"stress/config"
 	"stress/pkg"
-	"stress/pkg/logger"
 	"stress/pkg/printer"
 	"stress/pkg/utils"
 	"time"
@@ -27,9 +26,6 @@ import (
 
 // Main starts stress
 func Main(args []string) {
-	// 初始化zap logger
-	logger.InitLogger("main", "text", "debug", true)
-
 	// Set system max resources as needed.
 	utils.SetMaxResources()
 

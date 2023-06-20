@@ -22,3 +22,4 @@ go.work
 
 # result files
 *.zst
+log/*

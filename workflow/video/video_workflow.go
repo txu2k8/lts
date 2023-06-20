@@ -1,12 +1,8 @@
 package video
 
 import (
-	"context"
 	"fmt"
-	"net/http"
-	"stress/pkg/bench"
 	"stress/pkg/utils"
-	"stress/workflow"
 	"sync"
 	"time"
 )
@@ -20,9 +16,7 @@ const (
 
 // Put benchmarks upload speed.
 type VideoWorkflow struct {
-	workflow.Common
 	VideoInfo
-	prefixes          map[string]struct{}
 	ChannelID         int    // 视频ID
 	ChannelName       string // 视频Name
 	SkipStageInit     bool   //跳过init阶段
@@ -107,86 +101,4 @@ func (u *VideoWorkflow) StageMain() {
 	u.Consumer(ch, pool, wg)
 	wg.Wait()
 	fmt.Println("任务处理完毕")
-}
-
-// Prepare will create an empty buckets ot delete any content already there.
-func (u *VideoWorkflow) Prepare(ctx context.Context) error {
-	fmt.Printf("Stage-Prepare:Create empty buckets: %s%d~%d", u.BucketPrefix, 0, u.BucketNum)
-	return nil // u.CreateEmptyBucket(ctx)
-}
-
-// Start will execute the main workflow.
-// Operations should begin executing when the start channel is closed.
-func (u *VideoWorkflow) Start(ctx context.Context, wait chan struct{}) (bench.Operations, error) {
-	var wg sync.WaitGroup
-	wg.Add(u.Concurrency)
-	c := bench.NewCollector()
-	if u.AutoTermDur > 0 {
-		ctx = c.AutoTerm(ctx, http.MethodPut, u.AutoTermScale, bench.AutoTermCheck, bench.AutoTermSamples, u.AutoTermDur)
-	}
-	u.prefixes = make(map[string]struct{}, u.Concurrency)
-
-	// Non-terminating context.
-	nonTerm := context.Background()
-
-	for i := 0; i < u.Concurrency; i++ {
-		src := u.Source()
-		u.prefixes[src.Prefix()] = struct{}{}
-		go func(i int) {
-			rcv := c.Receiver()
-			defer wg.Done()
-			opts := u.PutOpts
-			done := ctx.Done()
-
-			<-wait
-			for {
-				select {
-				case <-done:
-					return
-				default:
-				}
-				obj := src.Object()
-				opts.ContentType = obj.ContentType
-				client, cldone := u.S3Client()
-				op := bench.Operation{
-					OpType:   http.MethodPut,
-					Thread:   uint16(i),
-					Size:     obj.Size,
-					File:     obj.Name,
-					ObjPerOp: 1,
-					Endpoint: client.EndpointURL().String(),
-				}
-				op.Start = time.Now()
-				res, err := client.PutObject(nonTerm, u.Bucket, obj.Name, obj.Reader, obj.Size, opts)
-				op.End = time.Now()
-				if err != nil {
-					u.Error("upload error: ", err)
-					op.Err = err.Error()
-				}
-				obj.VersionID = res.VersionID
-
-				if res.Size != obj.Size && op.Err == "" {
-					err := fmt.Sprint("short upload. want:", obj.Size, ", got:", res.Size)
-					if op.Err == "" {
-						op.Err = err
-					}
-					u.Error(err)
-				}
-				op.Size = res.Size
-				cldone()
-				rcv <- op
-			}
-		}(i)
-	}
-	wg.Wait()
-	return c.Close(), nil
-}
-
-// Cleanup deletes everything uploaded to the bucket.
-func (u *VideoWorkflow) Cleanup(ctx context.Context) {
-	var pf []string
-	for p := range u.prefixes {
-		pf = append(pf, p)
-	}
-	u.DeleteAllInBucket(ctx, pf...)
 }

@@ -49,6 +49,7 @@ func getEncoder(logFmt string) zapcore.Encoder {
 		encoderConfig := zap.NewProductionEncoderConfig()
 		encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 		encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+		encoderConfig.ConsoleSeparator = "  "
 		return zapcore.NewConsoleEncoder(encoderConfig)
 	}
 }

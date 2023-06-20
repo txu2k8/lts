@@ -25,9 +25,10 @@ import (
 	"sync"
 	"time"
 
+	"stress/pkg/generator"
+
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/pkg/console"
-	"github.com/minio/warp/pkg/generator"
 )
 
 // Delete benchmarks delete speed.

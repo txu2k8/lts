@@ -13,7 +13,7 @@ import (
 
 // ForeachStruct 遍历并打印结构体
 func foreachStruct(obj interface{}) {
-	max := 30
+	max := 14
 	t := reflect.TypeOf(obj) // 注意，obj不能为指针类型，否则会报：panic recovered: reflect: NumField of non-struct type
 	v := reflect.ValueOf(obj)
 	for k := 0; k < t.NumField(); k++ {
@@ -56,11 +56,8 @@ func (v *VideoInfo) CalcData() *VideoInfo {
 		v.PrepareChannelNum = v.ChannelNum
 	}
 
-	// 总带宽=码流/8*路数
+	// 总带宽=码流/8*路数 MB/s
 	v.BandWidth = (v.BitStream / 8) * float32(v.ChannelNum)
-
-	// 对象数 = 安全水位容量 / 对象大小
-	v.ObjNum = int(v.SafeWaterCapacity / v.FileInfo.Size)
 
 	// 每天数据量 = 带宽 * 1天
 	var sizePD = v.BandWidth * 60 * 60 * 24 * 1024 * 1024
@@ -77,6 +74,31 @@ func (v *VideoInfo) CalcData() *VideoInfo {
 	if v.ChannelNum == 0 && v.DataLife > 0 {
 		v.ChannelNum = int((float32(v.SafeWaterCapacity) / v.DataLife) / sizePCPD)
 	}
+	// 预埋阶段视频路数
+	if v.PrepareChannelNum <= 0 || v.PrepareChannelNum > v.ChannelNum {
+		v.PrepareChannelNum = v.ChannelNum
+	}
+
+	// 桶数量
+	if v.SingleBucket {
+		v.BucketNum = 1
+	} else {
+		v.BucketNum = v.ChannelNum
+	}
+
+	// 对象总数 = 安全水位容量 / 对象大小
+	v.ObjNum = int(v.SafeWaterCapacity / v.FileInfo.Size)
+	v.ObjNumPC = v.ObjNum / v.ChannelNum
+	v.ObjNumPD = int(uint64(sizePD) / v.FileInfo.Size)
+	v.ObjNumPCPD = v.ObjNumPD / v.ChannelNum
+
+	// 对象积攒时间间隔
+	v.TimeInterval = float32(v.FileInfo.Size / uint64(v.BitStream/8*1024*1024))
+	v.SegmentTimeInterval = v.TimeInterval / float32(v.Segments)
+
+	// 并行数
+	v.MainConcurrent = v.BandWidth / float32(v.FileInfo.Size) * 1024 * 1024
+	v.PrepareConcurrent = float32(v.PrepareChannelNum*int(v.BitStream/8)) / float32(v.FileInfo.Size) * 1024 * 1024
 
 	// 打印计算结果
 	v.printVideoInfo()

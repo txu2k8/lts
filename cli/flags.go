@@ -28,7 +28,11 @@ var globalFlags = []cli.Flag{
 	},
 	cli.BoolFlag{
 		Name:  "debug",
-		Usage: "enable debug output",
+		Usage: "enable debug level output",
+	},
+	cli.BoolFlag{
+		Name:  "verbose",
+		Usage: "print verbose output",
 	},
 	cli.BoolFlag{
 		Name:  "insecure",

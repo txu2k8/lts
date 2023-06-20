@@ -64,6 +64,7 @@ func GetFileMd5(fullPath string) string {
 		return ""
 	}
 	defer pFile.Close()
+
 	md5h := md5.New()
 	io.Copy(md5h, pFile)
 

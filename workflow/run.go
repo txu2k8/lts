@@ -16,6 +16,7 @@ import (
 	client "stress/client/s3"
 	"stress/config"
 	"stress/pkg/bench"
+	. "stress/pkg/logger"
 	"stress/pkg/printer"
 	"stress/pkg/utils"
 
@@ -27,11 +28,32 @@ import (
 	"github.com/minio/pkg/console"
 )
 
+type workflowStage string
+
+const (
+	stageNotStarted workflowStage = ""
+	stagePrepare    workflowStage = "prepare"
+	stageRunning    workflowStage = "running"
+	stageCleanup    workflowStage = "cleanup"
+	stageDone       workflowStage = "done"
+)
+
+var workflowStages = []workflowStage{
+	stagePrepare, stageRunning, stageCleanup,
+}
+
+type stageInfo struct {
+	startRequested bool
+	start          chan struct{}
+	done           chan struct{}
+	custom         map[string]string
+}
+
 // RunWorkflow will run the supplied benchmark and save/print the analysis.
 func RunWorkflow(ctx *cli.Context, b Workflow) error {
-	activeBenchmarkMu.Lock()
+	activeWorkflowMu.Lock()
 	// ab := activeBenchmark
-	activeBenchmarkMu.Unlock()
+	activeWorkflowMu.Unlock()
 	b.GetCommon().Error = printer.PrintError
 	// if ab != nil {
 	// 	b.GetCommon().ClientIdx = ab.clientIdx
@@ -210,35 +232,28 @@ func RunWorkflow(ctx *cli.Context, b Workflow) error {
 }
 
 var (
-	activeBenchmarkMu sync.Mutex
-	activeBenchmark   *clientBenchmark
+	activeWorkflowMu sync.Mutex
+	activeWorkflow   *workflowInfo
 )
 
-type clientBenchmark struct {
+type workflowInfo struct {
 	sync.Mutex
 	ctx       context.Context
 	cancel    context.CancelFunc
 	results   bench.Operations
 	err       error
-	stage     benchmarkStage
-	info      map[benchmarkStage]stageInfo
+	stage     workflowStage
+	info      map[workflowStage]stageInfo
 	clientIdx int
 }
 
-type stageInfo struct {
-	startRequested bool
-	start          chan struct{}
-	done           chan struct{}
-	custom         map[string]string
-}
-
-func (c *clientBenchmark) init(ctx context.Context) {
+func (c *workflowInfo) init(ctx context.Context) {
 	c.results = nil
 	c.err = nil
 	c.stage = stageNotStarted
-	c.info = make(map[benchmarkStage]stageInfo, len(benchmarkStages))
+	c.info = make(map[workflowStage]stageInfo, len(workflowStages))
 	c.ctx, c.cancel = context.WithCancel(ctx)
-	for _, stage := range benchmarkStages {
+	for _, stage := range workflowStages {
 		c.info[stage] = stageInfo{
 			start: make(chan struct{}),
 			done:  make(chan struct{}),
@@ -247,7 +262,7 @@ func (c *clientBenchmark) init(ctx context.Context) {
 }
 
 // waitForStage waits for the stage to be ready and updates the stage when it is
-func (c *clientBenchmark) waitForStage(s benchmarkStage) error {
+func (c *workflowInfo) waitForStage(s workflowStage) error {
 	c.Lock()
 	info, ok := c.info[s]
 	ctx := c.ctx
@@ -265,8 +280,9 @@ func (c *clientBenchmark) waitForStage(s benchmarkStage) error {
 }
 
 // waitForStage waits for the stage to be ready and updates the stage when it is
-func (c *clientBenchmark) stageDone(s benchmarkStage, err error, custom map[string]string) {
+func (c *workflowInfo) stageDone(s workflowStage, err error, custom map[string]string) {
 	console.Infoln(s, "done...")
+	Logger.Infof("%s done...", s)
 	if err != nil {
 		console.Errorln(err.Error())
 	}
@@ -283,34 +299,20 @@ func (c *clientBenchmark) stageDone(s benchmarkStage, err error, custom map[stri
 	c.Unlock()
 }
 
-func (c *clientBenchmark) setStage(s benchmarkStage) {
+func (c *workflowInfo) setStage(s workflowStage) {
 	c.Lock()
 	c.stage = s
 	c.Unlock()
 }
 
-type benchmarkStage string
-
-const (
-	stagePrepare    benchmarkStage = "prepare"
-	stageBenchmark  benchmarkStage = "benchmark"
-	stageCleanup    benchmarkStage = "cleanup"
-	stageDone       benchmarkStage = "done"
-	stageNotStarted benchmarkStage = ""
-)
-
-var benchmarkStages = []benchmarkStage{
-	stagePrepare, stageBenchmark, stageCleanup,
-}
-
-func runClientBenchmark(ctx *cli.Context, b bench.Benchmark, cb *clientBenchmark) error {
+func runClientBenchmark(ctx *cli.Context, b bench.Benchmark, cb *workflowInfo) error {
 	err := cb.waitForStage(stagePrepare)
 	if err != nil {
 		return err
 	}
 	common := b.GetCommon()
 	cb.Lock()
-	start := cb.info[stageBenchmark].start
+	start := cb.info[stageRunning].start
 	ctx2, cancel := context.WithCancel(cb.ctx)
 	defer cancel()
 	cb.Unlock()
@@ -324,23 +326,28 @@ func runClientBenchmark(ctx *cli.Context, b bench.Benchmark, cb *clientBenchmark
 	// Start after waiting a second or until we reached the start time.
 	benchDur := ctx.Duration("duration")
 	go func() {
-		console.Infoln("Waiting")
+		// console.Infoln("Waiting")
+		Logger.Info("Waiting...")
 		// Wait for start signal
 		select {
 		case <-ctx2.Done():
 			console.Infoln("Aborted")
+			Logger.Warn("Aborted")
 			return
 		case <-start:
 		}
-		console.Infoln("Starting")
+		// console.Infoln("Starting")
+		Logger.Info("Starting...")
 		// Finish after duration
 		select {
 		case <-ctx2.Done():
 			console.Infoln("Aborted")
+			Logger.Warn("Aborted")
 			return
 		case <-time.After(benchDur):
 		}
-		console.Infoln("Stopping")
+		// console.Infoln("Stopping")
+		Logger.Info("Stopping...")
 		// Stop the benchmark
 		cancel()
 	}()
@@ -355,7 +362,7 @@ func runClientBenchmark(ctx *cli.Context, b bench.Benchmark, cb *clientBenchmark
 	cb.Lock()
 	cb.results = ops
 	cb.Unlock()
-	cb.stageDone(stageBenchmark, err, common.Custom)
+	cb.stageDone(stageRunning, err, common.Custom)
 	if err != nil {
 		return err
 	}

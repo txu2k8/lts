@@ -28,9 +28,10 @@ import (
 	"sync"
 	"time"
 
+	"stress/pkg/generator"
+
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/pkg/console"
-	"github.com/minio/warp/pkg/generator"
 )
 
 // Multipart benchmarks multipart upload+download speed.

@@ -30,14 +30,14 @@ type VideoBaseInfo struct {
 
 // VideoDataInfo 数据模型信息 -- 原始需求信息分解后计算得出
 type VideoDataInfo struct {
-	BandWidth           float32 `json:"总带宽(MiB/s)"` // 带宽， MiB/s
-	BucketNum           int     `json:"桶数量"`        // 桶数量
-	ObjNum              int     `json:"总对象数"`       // 安全水位能写入的总对象数量，达到该数量后需要 边写边删
-	ObjNumPC            int     `json:"每路视频对象数"`    // 安全水位每路视频能写入的对象数量
-	ObjNumPD            int     `json:"每天对象数"`      // 每天需要写入的对象数量，码流+对象大小 计算得出
-	ObjNumPCPD          int     `json:"每路视频每天对象数"`  // 每路视频、每天，需要写入的对象数量
-	TimeInterval        int     `json:"一个对象产生时间"`   // 一路视频中，每个视频对象产生的实际间隔，单位：秒
-	SegmentTimeInterval int     `json:"一个分片产生时间"`   // 一路视频中，每个视频对象分片产生的实际间隔，单位：秒
+	BandWidth           float32 `json:"总带宽(MiB/s)"`  // 带宽， MiB/s
+	BucketNum           int     `json:"桶数量"`         // 桶数量
+	ObjNum              int     `json:"总对象数"`        // 安全水位能写入的总对象数量，达到该数量后需要 边写边删
+	ObjNumPC            int     `json:"每路视频对象数"`     // 安全水位每路视频能写入的对象数量
+	ObjNumPD            int     `json:"每天对象数"`       // 每天需要写入的对象数量，码流+对象大小 计算得出
+	ObjNumPCPD          int     `json:"每路视频每天对象数"`   // 每路视频、每天，需要写入的对象数量
+	TimeInterval        float32 `json:"一个对象产生时间(s)"` // 一路视频中，每个视频对象产生的实际间隔，单位：秒
+	SegmentTimeInterval float32 `json:"一个分片产生时间(s)"` // 一路视频中，每个视频对象分片产生的实际间隔，单位：秒
 
 	MaxWorkers        int     `json:"一路视频最大并行数"` // 一路视频中，最大处理并行数
 	MainConcurrent    float32 `json:"写删阶段每秒并行数"` // 写删阶段，平均每秒处理对象数
