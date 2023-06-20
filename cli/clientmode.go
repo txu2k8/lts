@@ -20,7 +20,7 @@ package cli
 import (
 	"net/http"
 	"strconv"
-	"stress/pkg/logger"
+	"stress/pkg/printer"
 	"strings"
 
 	"github.com/minio/cli"
@@ -68,11 +68,11 @@ func mainClient(ctx *cli.Context) error {
 		}
 	case 0:
 	default:
-		logger.Fatal(errInvalidArgument(), "Too many parameters")
+		printer.Fatal(errInvalidArgument(), "Too many parameters")
 	}
 	http.HandleFunc("/ws", serveWs)
 	console.Infoln("Listening on", addr)
-	logger.FatalIf(probe.NewError(http.ListenAndServe(addr, nil)), "Unable to start client")
+	printer.FatalIf(probe.NewError(http.ListenAndServe(addr, nil)), "Unable to start client")
 	return nil
 }
 

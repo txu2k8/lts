@@ -20,7 +20,7 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"stress/pkg/logger"
+	"stress/pkg/printer"
 	"strings"
 
 	"github.com/dustin/go-humanize"
@@ -51,14 +51,14 @@ func newGenSourceCSV(ctx *cli.Context) func() generator.Source {
 	g := generator.WithCSV().Size(25, 1000)
 
 	size, err := toSize(ctx.String("obj.size"))
-	logger.FatalIf(probe.NewError(err), "Invalid obj.size specified")
+	printer.FatalIf(probe.NewError(err), "Invalid obj.size specified")
 	src, err := generator.NewFn(g.Apply(),
 		generator.WithCustomPrefix(ctx.String("prefix")),
 		generator.WithPrefixSize(prefixSize),
 		generator.WithSize(int64(size)),
 		generator.WithRandomSize(ctx.Bool("obj.randsize")),
 	)
-	logger.FatalIf(probe.NewError(err), "Unable to create data generator")
+	printer.FatalIf(probe.NewError(err), "Unable to create data generator")
 	return src
 }
 
@@ -77,7 +77,7 @@ func newGenSource(ctx *cli.Context, sizeField string) func() generator.Source {
 		g = generator.WithCSV().Size(25, 1000)
 	default:
 		err := errors.New("unknown generator type:" + ctx.String("obj.generator"))
-		logger.Fatal(probe.NewError(err), "Invalid -generator parameter")
+		printer.Fatal(probe.NewError(err), "Invalid -generator parameter")
 		return nil
 	}
 	opts := []generator.Option{
@@ -89,25 +89,25 @@ func newGenSource(ctx *cli.Context, sizeField string) func() generator.Source {
 	case 1:
 		size, err := toSize(tokens[0])
 		if err != nil {
-			logger.FatalIf(probe.NewError(err), "Invalid obj.size specified")
+			printer.FatalIf(probe.NewError(err), "Invalid obj.size specified")
 		}
 		opts = append(opts, generator.WithSize(int64(size)))
 	case 2:
 		minSize, err := toSize(tokens[0])
 		if err != nil {
-			logger.FatalIf(probe.NewError(err), "Invalid min obj.size specified")
+			printer.FatalIf(probe.NewError(err), "Invalid min obj.size specified")
 		}
 		maxSize, err := toSize(tokens[1])
 		if err != nil {
-			logger.FatalIf(probe.NewError(err), "Invalid max obj.size specified")
+			printer.FatalIf(probe.NewError(err), "Invalid max obj.size specified")
 		}
 		opts = append(opts, generator.WithMinMaxSize(int64(minSize), int64(maxSize)))
 	default:
-		logger.FatalIf(probe.NewError(fmt.Errorf("unexpected obj.size specified: %s", ctx.String(sizeField))), "Invalid obj.size parameter")
+		printer.FatalIf(probe.NewError(fmt.Errorf("unexpected obj.size specified: %s", ctx.String(sizeField))), "Invalid obj.size parameter")
 	}
 	opts = append([]generator.Option{g.Apply()}, append(opts, generator.WithRandomSize(ctx.Bool("obj.randsize")))...)
 	src, err := generator.NewFn(opts...)
-	logger.FatalIf(probe.NewError(err), "Unable to create data generator")
+	printer.FatalIf(probe.NewError(err), "Unable to create data generator")
 	return src
 }
 

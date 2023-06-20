@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"os"
 	"stress/config"
-	"stress/pkg/logger"
+	"stress/pkg/printer"
 	"strings"
 	"sync"
 	"time"
@@ -40,10 +40,10 @@ func NewClient(ctx *cli.Context) func() (cl *minio.Client, done func()) {
 	hosts := ParseHosts(ctx.String("endpoint"), ctx.Bool("resolve-host"))
 	switch len(hosts) {
 	case 0:
-		logger.FatalIf(probe.NewError(errors.New("no host defined")), "Unable to create MinIO client")
+		printer.FatalIf(probe.NewError(errors.New("no host defined")), "Unable to create MinIO client")
 	case 1:
 		cl, err := getClient(ctx, hosts[0])
-		logger.FatalIf(probe.NewError(err), "Unable to create MinIO client")
+		printer.FatalIf(probe.NewError(err), "Unable to create MinIO client")
 
 		return func() (*minio.Client, func()) {
 			return cl, func() {}
@@ -58,7 +58,7 @@ func NewClient(ctx *cli.Context) func() (cl *minio.Client, done func()) {
 		clients := make([]*minio.Client, len(hosts))
 		for i := range hosts {
 			cl, err := getClient(ctx, hosts[i])
-			logger.FatalIf(probe.NewError(err), "Unable to create MinIO client")
+			printer.FatalIf(probe.NewError(err), "Unable to create MinIO client")
 			clients[i] = cl
 		}
 		return func() (*minio.Client, func()) {
@@ -75,7 +75,7 @@ func NewClient(ctx *cli.Context) func() (cl *minio.Client, done func()) {
 		clients := make([]*minio.Client, len(hosts))
 		for i := range hosts {
 			cl, err := getClient(ctx, hosts[i])
-			logger.FatalIf(probe.NewError(err), "Unable to create MinIO client")
+			printer.FatalIf(probe.NewError(err), "Unable to create MinIO client")
 			clients[i] = cl
 		}
 		running := make([]int, len(hosts))
@@ -139,7 +139,7 @@ func getClient(ctx *cli.Context, host string) (*minio.Client, error) {
 		// if Signature version '2' use NewV2 directly.
 		creds = credentials.NewStaticV2(ctx.String("access-key"), ctx.String("secret-key"), "")
 	default:
-		logger.Fatal(probe.NewError(errors.New("unknown signature method. S3V2 and S3V4 is available")), strings.ToUpper(ctx.String("signature")))
+		printer.Fatal(probe.NewError(errors.New("unknown signature method. S3V2 and S3V4 is available")), strings.ToUpper(ctx.String("signature")))
 	}
 
 	cl, err := minio.New(host, &minio.Options{
@@ -215,7 +215,7 @@ func ParseHosts(h string, resolveDNS bool) []string {
 		}
 		patterns, perr := ellipses.FindEllipsesPatterns(host)
 		if perr != nil {
-			logger.FatalIf(probe.NewError(perr), "Unable to parse host parameter")
+			printer.FatalIf(probe.NewError(perr), "Unable to parse host parameter")
 
 			log.Fatal(perr.Error())
 		}
@@ -236,7 +236,7 @@ func ParseHosts(h string, resolveDNS bool) []string {
 		}
 		ips, err := net.LookupIP(host)
 		if err != nil {
-			logger.FatalIf(probe.NewError(err), "Could not get IPs for "+hostport)
+			printer.FatalIf(probe.NewError(err), "Could not get IPs for "+hostport)
 			log.Fatal(err.Error())
 		}
 		for _, ip := range ips {
@@ -265,10 +265,10 @@ func mustGetSystemCertPool() *x509.CertPool {
 func NewAdminClient(ctx *cli.Context) *madmin.AdminClient {
 	hosts := ParseHosts(ctx.String("host"), ctx.Bool("resolve-host"))
 	if len(hosts) == 0 {
-		logger.FatalIf(probe.NewError(errors.New("no host defined")), "Unable to create MinIO admin client")
+		printer.FatalIf(probe.NewError(errors.New("no host defined")), "Unable to create MinIO admin client")
 	}
 	cl, err := madmin.New(hosts[0], ctx.String("access-key"), ctx.String("secret-key"), ctx.Bool("tls"))
-	logger.FatalIf(probe.NewError(err), "Unable to create MinIO admin client")
+	printer.FatalIf(probe.NewError(err), "Unable to create MinIO admin client")
 	cl.SetCustomTransport(clientTransport(ctx))
 	cl.SetAppInfo(config.AppName, pkg.Version)
 	return cl

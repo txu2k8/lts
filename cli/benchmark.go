@@ -16,7 +16,7 @@ import (
 	client "stress/client/s3"
 	"stress/config"
 	"stress/pkg/bench"
-	"stress/pkg/logger"
+	"stress/pkg/printer"
 	"stress/pkg/utils"
 
 	"github.com/cheggaaa/pb"
@@ -84,18 +84,18 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 	activeBenchmarkMu.Lock()
 	ab := activeBenchmark
 	activeBenchmarkMu.Unlock()
-	b.GetCommon().Error = logger.PrintError
+	b.GetCommon().Error = printer.PrintError
 	if ab != nil {
 		b.GetCommon().ClientIdx = ab.clientIdx
 		return runClientBenchmark(ctx, b, ab)
 	}
 	if done, err := runServerBenchmark(ctx, b); done || err != nil {
-		logger.FatalIf(probe.NewError(err), "Error running remote benchmark")
+		printer.FatalIf(probe.NewError(err), "Error running remote benchmark")
 		return nil
 	}
 
 	monitor := api.NewBenchmarkMonitor(ctx.String(serverFlagName))
-	monitor.SetLnLoggers(logger.PrintInfo, logger.PrintError)
+	monitor.SetLnLoggers(printer.PrintInfo, printer.PrintError)
 	defer monitor.Done()
 
 	monitor.InfoLn("Preparing server.")
@@ -150,7 +150,7 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 	}
 
 	err := b.Prepare(context.Background())
-	logger.FatalIf(probe.NewError(err), "Error preparing server")
+	printer.FatalIf(probe.NewError(err), "Error preparing server")
 	if c.PrepareProgress != nil {
 		close(c.PrepareProgress)
 		<-pgDone
@@ -158,7 +158,7 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 
 	if ap, ok := b.(AfterPreparer); ok {
 		err := ap.AfterPrepare(context.Background())
-		logger.FatalIf(probe.NewError(err), "Error preparing server")
+		printer.FatalIf(probe.NewError(err), "Error preparing server")
 	}
 
 	// Start after waiting a second or until we reached the start time.
@@ -191,7 +191,7 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 	}
 
 	prof, err := startProfiling(ctx2, ctx)
-	logger.FatalIf(probe.NewError(err), "Unable to start profile.")
+	printer.FatalIf(probe.NewError(err), "Unable to start profile.")
 	monitor.InfoLn("Starting benchmark in ", time.Until(tStart).Round(time.Second), "...")
 	pgDone = make(chan struct{})
 	if !config.GlobalQuiet && !config.GlobalJSON {
@@ -241,11 +241,11 @@ func runBench(ctx *cli.Context, b bench.Benchmark) error {
 		func() {
 			defer f.Close()
 			enc, err := zstd.NewWriter(f, zstd.WithEncoderLevel(zstd.SpeedBetterCompression))
-			logger.FatalIf(probe.NewError(err), "Unable to compress benchmark output")
+			printer.FatalIf(probe.NewError(err), "Unable to compress benchmark output")
 
 			defer enc.Close()
 			err = ops.CSV(enc, utils.CommandLine(ctx))
-			logger.FatalIf(probe.NewError(err), "Unable to write benchmark output")
+			printer.FatalIf(probe.NewError(err), "Unable to write benchmark output")
 
 			monitor.InfoLn(fmt.Sprintf("Benchmark data written to %q\n", fileName+".csv.zst"))
 		}()
@@ -420,11 +420,11 @@ func runClientBenchmark(ctx *cli.Context, b bench.Benchmark, cb *clientBenchmark
 		func() {
 			defer f.Close()
 			enc, err := zstd.NewWriter(f, zstd.WithEncoderLevel(zstd.SpeedBetterCompression))
-			logger.FatalIf(probe.NewError(err), "Unable to compress benchmark output")
+			printer.FatalIf(probe.NewError(err), "Unable to compress benchmark output")
 
 			defer enc.Close()
 			err = ops.CSV(enc, utils.CommandLine(ctx))
-			logger.FatalIf(probe.NewError(err), "Unable to write benchmark output")
+			printer.FatalIf(probe.NewError(err), "Unable to write benchmark output")
 
 			console.Infof("Benchmark data written to %q\n", fileName+".csv.zst")
 		}()
@@ -471,7 +471,7 @@ func (rp *runningProfiles) stop(ctx2 context.Context, ctx *cli.Context, fileName
 
 	// Ask for profile data, which will come compressed with zip format
 	zippedData, adminErr := rp.client.DownloadProfilingData(ctx2)
-	logger.FatalIf(probe.NewError(adminErr), "Unable to download profile data.")
+	printer.FatalIf(probe.NewError(adminErr), "Unable to download profile data.")
 	defer zippedData.Close()
 
 	f, err := os.Create(fileName)
@@ -514,22 +514,22 @@ func checkBenchmark(ctx *cli.Context) {
 			}
 		}
 		if !supportedProfiler {
-			logger.FatalIf(errDummy(), "Profiler type %s unrecognized. Possible values are: %v.", profilerType, profilerTypes)
+			printer.FatalIf(errDummy(), "Profiler type %s unrecognized. Possible values are: %v.", profilerType, profilerTypes)
 		}
 	}
 	if st := ctx.String("syncstart"); st != "" {
 		t := parseLocalTime(st)
 		if t.Before(time.Now()) {
-			logger.FatalIf(errDummy(), "syncstart is in the past: %v", t)
+			printer.FatalIf(errDummy(), "syncstart is in the past: %v", t)
 		}
 	}
 	if ctx.Bool("autoterm") {
 		// TODO: autoterm cannot be used when in client/server mode
 		if ctx.Duration("autoterm.dur") <= 0 {
-			logger.FatalIf(errDummy(), "autoterm.dur cannot be zero or negative")
+			printer.FatalIf(errDummy(), "autoterm.dur cannot be zero or negative")
 		}
 		if ctx.Float64("autoterm.pct") <= 0 {
-			logger.FatalIf(errDummy(), "autoterm.pct cannot be zero or negative")
+			printer.FatalIf(errDummy(), "autoterm.pct cannot be zero or negative")
 		}
 	}
 }
@@ -539,7 +539,7 @@ const timeLayout = "15:04"
 
 func parseLocalTime(s string) time.Time {
 	t, err := time.ParseInLocation(timeLayout, s, time.Local)
-	logger.FatalIf(probe.NewError(err), "Unable to parse time: %s", s)
+	printer.FatalIf(probe.NewError(err), "Unable to parse time: %s", s)
 	now := time.Now()
 	y, m, d := now.Date()
 	t = t.AddDate(y, int(m)-1, d-1)

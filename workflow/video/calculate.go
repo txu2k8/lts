@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"stress/pkg/logger"
+	fileOps "stress/client/fs"
+	. "stress/pkg/logger"
 	"strings"
 
 	"github.com/dustin/go-humanize"
@@ -22,7 +23,7 @@ func foreachStruct(obj interface{}) {
 		case "FileInfo", "DataLife", "TotalCapacity", "SafeWaterCapacity", "SafeWaterLevel":
 			continue
 		default:
-			logger.Infof("%-"+strconv.Itoa(max)+"s\t: %v", tag, value)
+			Logger.Infof("%-"+strconv.Itoa(max)+"s\t: %v", tag, value)
 		}
 	}
 }
@@ -30,13 +31,13 @@ func foreachStruct(obj interface{}) {
 // 打印计算结果
 func (v *VideoInfo) printVideoInfo() bool {
 	fmtStr := strings.Repeat("=", 30)
-	logger.Infof("%s 原始需求信息 %s", fmtStr, fmtStr)
+	Logger.Infof("%s 原始需求信息 %s", fmtStr, fmtStr)
 	foreachStruct(v.VideoBaseInfo)
 
-	logger.Infof("%s 数据模型信息 %s", fmtStr, fmtStr)
+	Logger.Infof("%s 数据模型信息 %s", fmtStr, fmtStr)
 	foreachStruct(v.VideoDataInfo)
 
-	logger.Infof("%s 自定义变量信息 %s", fmtStr, fmtStr)
+	Logger.Infof("%s 自定义变量信息 %s", fmtStr, fmtStr)
 	foreachStruct(v.VideoCustomizeInfo)
 
 	return true
@@ -44,8 +45,8 @@ func (v *VideoInfo) printVideoInfo() bool {
 
 // 视频监控场景 - 数据模型计算
 func (v *VideoInfo) CalcData() *VideoInfo {
-	logger.Infof("计算分析数据模型/参数...")
-	v.FileInfo = *GetFileInfo(v.FileInfo.FullPath)
+	Logger.Infof("计算分析数据模型/参数...")
+	v.FileInfo = *fileOps.GetFileInfo(v.FileInfo.FullPath)
 	v.FileInfoHuman = fmt.Sprintf("Path=%s; Size=%s", v.FileInfo.FullPath, v.FileInfo.SizeHuman)
 	v.TotalCapacityHuman = humanize.IBytes(v.TotalCapacity)
 	v.SafeWaterLevelHuman = fmt.Sprintf("%v %%", v.SafeWaterLevel*100)

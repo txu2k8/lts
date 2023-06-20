@@ -15,7 +15,7 @@ import (
 	s3client "stress/client/s3"
 	"stress/config"
 	"stress/pkg/bench"
-	"stress/pkg/logger"
+	"stress/pkg/printer"
 	"stress/pkg/utils"
 
 	"github.com/klauspost/compress/zstd"
@@ -84,12 +84,12 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 	if len(conns.hosts) == 0 {
 		return true, errors.New("no hosts")
 	}
-	conns.info = logger.PrintInfo
-	conns.errLn = logger.PrintError
+	conns.info = printer.PrintInfo
+	conns.errLn = printer.PrintError
 	defer conns.closeAll()
 	monitor := api.NewBenchmarkMonitor(ctx.String(serverFlagName))
 	defer monitor.Done()
-	monitor.SetLnLoggers(logger.PrintInfo, logger.PrintError)
+	monitor.SetLnLoggers(printer.PrintInfo, printer.PrintError)
 	infoLn := monitor.InfoLn
 	errorLn := monitor.Errorln
 
@@ -131,9 +131,9 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 	// Connect to hosts, send benchmark requests.
 	for i := range conns.hosts {
 		resp, err := conns.roundTrip(i, req)
-		logger.FatalIf(probe.NewError(err), "Unable to send benchmark info to warp client")
+		printer.FatalIf(probe.NewError(err), "Unable to send benchmark info to warp client")
 		if resp.Err != "" {
-			logger.FatalIf(probe.NewError(errors.New(resp.Err)), "Error received from warp client")
+			printer.FatalIf(probe.NewError(errors.New(resp.Err)), "Error received from warp client")
 		}
 		infoLn("Client ", conns.hostName(i), " connected...")
 		// Assume ok.
@@ -144,11 +144,11 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 	_ = conns.startStageAll(stagePrepare, time.Now().Add(time.Second), true)
 	err := conns.waitForStage(stagePrepare, true, common)
 	if err != nil {
-		logger.FatalIf(probe.NewError(err), "Failed to prepare")
+		printer.FatalIf(probe.NewError(err), "Failed to prepare")
 	}
 	if ap, ok := b.(AfterPreparer); ok {
 		err := ap.AfterPrepare(context.Background())
-		logger.FatalIf(probe.NewError(err), "Error preparing server")
+		printer.FatalIf(probe.NewError(err), "Error preparing server")
 	}
 
 	infoLn("All clients prepared...")
@@ -197,11 +197,11 @@ func runServerBenchmark(ctx *cli.Context, b bench.Benchmark) (bool, error) {
 		func() {
 			defer f.Close()
 			enc, err := zstd.NewWriter(f, zstd.WithEncoderLevel(zstd.SpeedBetterCompression))
-			logger.FatalIf(probe.NewError(err), "Unable to compress benchmark output")
+			printer.FatalIf(probe.NewError(err), "Unable to compress benchmark output")
 
 			defer enc.Close()
 			err = allOps.CSV(enc, utils.CommandLine(ctx))
-			logger.FatalIf(probe.NewError(err), "Unable to write benchmark output")
+			printer.FatalIf(probe.NewError(err), "Unable to write benchmark output")
 
 			infoLn(fmt.Sprintf("Benchmark data written to %q\n", fileName+".csv.zst"))
 		}()
@@ -402,7 +402,7 @@ func (c *connections) startStageAll(stage benchmarkStage, startAt time.Time, fai
 			err := c.startStage(i, startAt, stage)
 			if err != nil {
 				if failOnErr {
-					logger.FatalIf(probe.NewError(err), "Stage start failed.")
+					printer.FatalIf(probe.NewError(err), "Stage start failed.")
 				}
 				c.errLn("Starting stage error:", err)
 				mu.Lock()
@@ -473,7 +473,7 @@ func (c *connections) waitForStage(stage benchmarkStage, failOnErr bool, common 
 				if err != nil {
 					c.disconnect(i)
 					if failOnErr {
-						logger.FatalIf(probe.NewError(err), "Stage failed.")
+						printer.FatalIf(probe.NewError(err), "Stage failed.")
 					}
 					c.errLn(err)
 					return
@@ -481,7 +481,7 @@ func (c *connections) waitForStage(stage benchmarkStage, failOnErr bool, common 
 				if resp.Err != "" {
 					c.disconnect(i)
 					if failOnErr {
-						logger.FatalIf(probe.NewError(errors.New(resp.Err)), "Stage failed. Client %v returned error.", c.hostName(i))
+						printer.FatalIf(probe.NewError(errors.New(resp.Err)), "Stage failed. Client %v returned error.", c.hostName(i))
 					}
 					c.errorF("Client %v returned error: %v\n", c.hostName(i), resp.Err)
 					return

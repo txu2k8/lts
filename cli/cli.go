@@ -11,6 +11,7 @@ import (
 	"stress/config"
 	"stress/pkg"
 	"stress/pkg/logger"
+	"stress/pkg/printer"
 	"stress/pkg/utils"
 	"time"
 
@@ -27,7 +28,7 @@ import (
 // Main starts stress
 func Main(args []string) {
 	// 初始化zap logger
-	logger.InitLogger("./log/test.log", "text", "debug", true)
+	logger.InitLogger("main", "text", "debug", true)
 
 	// Set system max resources as needed.
 	utils.SetMaxResources()
@@ -214,7 +215,7 @@ func installAutoCompletion() {
 
 	err := completeinstall.Install(filepath.Base(os.Args[0]))
 	if err != nil {
-		logger.FatalIf(probe.NewError(err), "Unable to install auto-completion.")
+		printer.FatalIf(probe.NewError(err), "Unable to install auto-completion.")
 	} else {
 		console.Infoln("enabled autocompletion in '$SHELLRC'. Please restart your shell.")
 	}
@@ -224,7 +225,7 @@ func installAutoCompletion() {
 // Returns a map of current os/arch/platform/memstats.
 func getSystemData() map[string]string {
 	host, e := os.Hostname()
-	logger.FatalIf(probe.NewError(e), "Unable to determine the hostname.")
+	printer.FatalIf(probe.NewError(e), "Unable to determine the hostname.")
 
 	memstats := &runtime.MemStats{}
 	runtime.ReadMemStats(memstats)
@@ -257,7 +258,7 @@ func commandNotFound(ctx *cli.Context, command string) {
 			}
 		}
 	}
-	logger.FatalIf(errDummy().Trace(), msg)
+	printer.FatalIf(errDummy().Trace(), msg)
 }
 
 // findClosestCommands to match a given string with commands trie tree.

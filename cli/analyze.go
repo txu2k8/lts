@@ -31,7 +31,7 @@ import (
 	"stress/config"
 	"stress/pkg/aggregate"
 	"stress/pkg/bench"
-	"stress/pkg/logger"
+	"stress/pkg/printer"
 	"stress/pkg/utils"
 
 	"github.com/fatih/color"
@@ -134,14 +134,14 @@ func mainAnalyze(ctx *cli.Context) error {
 			input = os.Stdin
 		} else {
 			f, err := os.Open(arg)
-			logger.FatalIf(probe.NewError(err), "Unable to open input file")
+			printer.FatalIf(probe.NewError(err), "Unable to open input file")
 			defer f.Close()
 			input = f
 		}
 		err := zstdDec.Reset(input)
-		logger.FatalIf(probe.NewError(err), "Unable to read input")
+		printer.FatalIf(probe.NewError(err), "Unable to read input")
 		ops, err := bench.OperationsFromCSV(zstdDec, true, ctx.Int("analyze.offset"), ctx.Int("analyze.limit"), log)
-		logger.FatalIf(probe.NewError(err), "Unable to parse input")
+		printer.FatalIf(probe.NewError(err), "Unable to parse input")
 
 		printAnalysis(ctx, ops)
 		monitor.OperationsReady(ops, strings.TrimSuffix(filepath.Base(arg), ".csv.zst"), utils.CommandLine(ctx))
@@ -246,7 +246,7 @@ func printAnalysis(ctx *cli.Context, o bench.Operations) {
 			wrSegs = os.Stdout
 		} else {
 			f, err := os.Create(fn)
-			logger.FatalIf(probe.NewError(err), "Unable to create create analysis output")
+			printer.FatalIf(probe.NewError(err), "Unable to create create analysis output")
 			defer console.Println("Aggregated data saved to", fn)
 			defer f.Close()
 			wrSegs = f
@@ -289,7 +289,7 @@ func printAnalysis(ctx *cli.Context, o bench.Operations) {
 
 	if config.GlobalJSON {
 		b, err := json.MarshalIndent(aggr, "", "  ")
-		logger.FatalIf(probe.NewError(err), "Unable to marshal data.")
+		printer.FatalIf(probe.NewError(err), "Unable to marshal data.")
 		if err != nil {
 			console.Errorln(err)
 		}
@@ -420,7 +420,7 @@ func writeSegs(ctx *cli.Context, wrSegs io.Writer, ops bench.Operations, allThre
 
 	segs.SortByTime()
 	err := segs.CSV(wrSegs)
-	logger.ErrorIf(probe.NewError(err), "Error writing analysis")
+	printer.ErrorIf(probe.NewError(err), "Error writing analysis")
 	start := segs[0].Start
 	wantSegs := len(segs)
 
@@ -448,7 +448,7 @@ func writeSegs(ctx *cli.Context, wrSegs io.Writer, ops bench.Operations, allThre
 			}
 			segs.SortByTime()
 			err := segs.CSV(wrSegs)
-			logger.ErrorIf(probe.NewError(err), "Error writing analysis")
+			printer.ErrorIf(probe.NewError(err), "Error writing analysis")
 		}
 	}
 }
@@ -631,13 +631,13 @@ func analysisDur(ctx *cli.Context, total time.Duration) time.Duration {
 		}
 	}
 	d, err := time.ParseDuration(dur)
-	logger.FatalIf(probe.NewError(err), "Invalid -analyze.dur value")
+	printer.FatalIf(probe.NewError(err), "Invalid -analyze.dur value")
 	return d
 }
 
 func checkAnalyze(ctx *cli.Context) {
 	if analysisDur(ctx, time.Minute) == 0 {
 		err := errors.New("-analyze.dur cannot be 0")
-		logger.Fatal(probe.NewError(err), "Invalid -analyze.dur value")
+		printer.Fatal(probe.NewError(err), "Invalid -analyze.dur value")
 	}
 }

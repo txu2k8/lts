@@ -1,4 +1,4 @@
-package video
+package fileOps
 
 import (
 	"crypto/md5"
@@ -7,15 +7,16 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"stress/pkg/logger"
+	"stress/models"
+	. "stress/pkg/logger"
 
 	"github.com/dustin/go-humanize"
 )
 
-func GetFileInfo(fullPath string) *FileInfo {
+func GetFileInfo(fullPath string) *models.FileInfo {
 	fInfo, err := os.Stat(fullPath)
 	if os.IsNotExist(err) {
-		logger.Errorf("File or Path not exist! -> %s", fullPath)
+		Logger.Errorf("File or Path not exist! -> %s", fullPath)
 	}
 	// 是否是目录
 	if fInfo.IsDir() {
@@ -25,7 +26,7 @@ func GetFileInfo(fullPath string) *FileInfo {
 
 	fSize := uint64(fInfo.Size())
 	fName := fInfo.Name()
-	fileInfo := FileInfo{
+	fileInfo := models.FileInfo{
 		Name:      fName,
 		FullPath:  fullPath,
 		FileType:  path.Ext(fName),
@@ -50,7 +51,7 @@ func GetDirFiles(rootDir string) []string {
 	}
 
 	for _, file := range files {
-		logger.Debugf("%s", file)
+		Logger.Debugf("%s", file)
 	}
 	return files
 }
@@ -59,7 +60,7 @@ func GetDirFiles(rootDir string) []string {
 func GetFileMd5(fullPath string) string {
 	pFile, err := os.Open(fullPath)
 	if err != nil {
-		logger.Errorf("打开文件失败,path=%v, err=%v", fullPath, err)
+		Logger.Errorf("打开文件失败,path=%v, err=%v", fullPath, err)
 		return ""
 	}
 	defer pFile.Close()

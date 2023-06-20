@@ -1,29 +1,15 @@
 // 场景：视频监控 - 数据模型
 package video
 
-import "io"
-
-// FileInfo 测试源文件信息
-type FileInfo struct {
-	Name      string        `json:"文件名"`       // 文件名
-	FullPath  string        `json:"文件路径"`      // 文件路径
-	FileType  string        `json:"文件类型"`      // 文件类型 -- 后缀
-	Md5       string        `json:"MD5值"`      // MD5值
-	Tags      string        `json:"Tags"`      // Tags
-	Attr      string        `json:"Attr"`      // Attr
-	Size      uint64        `json:"Size"`      // Size
-	SizeHuman string        `json:"SizeHuman"` // SizeHuman
-	Segments  int           `json:"分段数"`       // 分段数
-	Reader    io.ReadSeeker `json:"Reader"`    // Reader
-}
+import "stress/models"
 
 // VideoBaseInfo 原始需求信息
 type VideoBaseInfo struct {
-	ChannelNum int      `json:"视频路数"`       // 视频路数
-	BitStream  float32  `json:"视频码流(Mbps)"` // 码流大小，单位 Mbps
-	DataLife   float32  `json:"DataLife"`   // 数据保留期限，单位 天
-	FileInfo   FileInfo `json:"FileInfo"`   // 源文件信息\Reader
-	Segments   int      `json:"追加分片数"`      // 追加写模式下，一个对象追加分片次数
+	ChannelNum int             `json:"视频路数"`       // 视频路数
+	BitStream  float32         `json:"视频码流(Mbps)"` // 码流大小，单位 Mbps
+	DataLife   float32         `json:"DataLife"`   // 数据保留期限，单位 天
+	FileInfo   models.FileInfo `json:"FileInfo"`   // 源文件信息\Reader
+	Segments   int             `json:"追加分片数"`      // 追加写模式下，一个对象追加分片次数
 
 	TotalCapacity     uint64  `json:"TotalCapacity"`     // 存储池总容量大小，单位 byte
 	SafeWaterLevel    float32 `json:"SafeWaterLevel"`    // 安全水位，即数据写入存储池的数据量最大不超过总容量的百分比，例如 90%=0.9

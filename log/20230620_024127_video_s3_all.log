@@ -1,0 +1,33 @@
+2023-06-20T02:41:27.176Z	INFO	video/calculate.go:48	计算分析数据模型/参数...
+2023-06-20T02:41:27.176Z	DEBUG	fs/fileOps.go:54	/root/upload/128MB.txt
+2023-06-20T02:41:27.377Z	INFO	video/calculate.go:34	============================== 原始需求信息 ==============================
+2023-06-20T02:41:27.377Z	INFO	video/calculate.go:26	视频路数                          	: 1000
+2023-06-20T02:41:27.377Z	INFO	video/calculate.go:26	视频码流(Mbps)                    	: 4
+2023-06-20T02:41:27.377Z	INFO	video/calculate.go:26	追加分片数                         	: 1
+2023-06-20T02:41:27.377Z	INFO	video/calculate.go:26	追加写模式                         	: false
+2023-06-20T02:41:27.378Z	INFO	video/calculate.go:26	非多段上传                         	: false
+2023-06-20T02:41:27.378Z	INFO	video/calculate.go:26	单桶模式                          	: false
+2023-06-20T02:41:27.378Z	INFO	video/calculate.go:26	单桶模式桶名                        	: false
+2023-06-20T02:41:27.378Z	INFO	video/calculate.go:26	源文件信息                         	: Path=/root/upload/128MB.txt; Size=128 MiB
+2023-06-20T02:41:27.378Z	INFO	video/calculate.go:26	保留期限(天)                       	: 3.542
+2023-06-20T02:41:27.378Z	INFO	video/calculate.go:26	总容量                           	: 160 TiB
+2023-06-20T02:41:27.378Z	INFO	video/calculate.go:26	安全水位                          	: 91.2 %
+2023-06-20T02:41:27.378Z	INFO	video/calculate.go:26	安全容量                          	: 146 TiB
+2023-06-20T02:41:27.378Z	INFO	video/calculate.go:37	============================== 数据模型信息 ==============================
+2023-06-20T02:41:27.378Z	INFO	video/calculate.go:26	总带宽(MiB/s)                    	: 500
+2023-06-20T02:41:27.378Z	INFO	video/calculate.go:26	桶数量                           	: 0
+2023-06-20T02:41:27.379Z	INFO	video/calculate.go:26	总对象数                          	: 1195376
+2023-06-20T02:41:27.379Z	INFO	video/calculate.go:26	每路视频对象数                       	: 0
+2023-06-20T02:41:27.379Z	INFO	video/calculate.go:26	每天对象数                         	: 0
+2023-06-20T02:41:27.379Z	INFO	video/calculate.go:26	每路视频每天对象数                     	: 0
+2023-06-20T02:41:27.379Z	INFO	video/calculate.go:26	一个对象产生时间                      	: 0
+2023-06-20T02:41:27.379Z	INFO	video/calculate.go:26	一个分片产生时间                      	: 0
+2023-06-20T02:41:27.379Z	INFO	video/calculate.go:26	一路视频最大并行数                     	: 0
+2023-06-20T02:41:27.379Z	INFO	video/calculate.go:26	写删阶段每秒并行数                     	: 0
+2023-06-20T02:41:27.379Z	INFO	video/calculate.go:26	预埋阶段每秒并行数                     	: 0
+2023-06-20T02:41:27.379Z	INFO	video/calculate.go:40	============================== 自定义变量信息 ==============================
+2023-06-20T02:41:27.379Z	INFO	video/calculate.go:26	预埋阶段视频路数                      	: 1000
+2023-06-20T02:41:27.380Z	INFO	video/calculate.go:26	桶前缀                           	: 
+2023-06-20T02:41:27.380Z	INFO	video/calculate.go:26	对象前缀                          	: 
+2023-06-20T02:41:27.380Z	INFO	video/calculate.go:26	对象名序号长度                       	: 0
+2023-06-20T02:41:27.380Z	INFO	video/calculate.go:26	对象序号起始值                       	: 0

@@ -1,4 +1,4 @@
-package logger
+package printer
 
 import (
 	"encoding/json"

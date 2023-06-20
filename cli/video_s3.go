@@ -2,6 +2,8 @@ package cli
 
 import (
 	s3client "stress/client/s3"
+	"stress/models"
+	"stress/pkg/logger"
 	"stress/workflow"
 	"stress/workflow/video"
 
@@ -153,11 +155,13 @@ FLAGS:
 
 // mainVideo is the entry point for cp command.
 func mainVideo(ctx *cli.Context) error {
+	// 初始化zap logger
+	logger.InitLogger("video_s3", "text", "debug", true)
 	checkVideoSyntax(ctx)
 	capacity, _ := humanize.ParseBytes(ctx.String("capacity"))
 	videoInfo := video.VideoInfo{
 		VideoBaseInfo: video.VideoBaseInfo{
-			FileInfo: video.FileInfo{
+			FileInfo: models.FileInfo{
 				FullPath: ctx.String("local-path"),
 			},
 			ChannelNum: ctx.Int("channel-num"),
